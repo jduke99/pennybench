@@ -351,3 +351,13 @@ def test_harbor_command_appends_the_isolation_line(tmp_path, config):
     argv = harbor_command(arm, tmp_path, tmp_path / "out", env, tmp_path, {}, [], [], "ref abc")
     assert argv[argv.index("--extra-instruction") + 1] == "ref abc"
     assert "--extra-instruction" not in harbor_command(arm, tmp_path, tmp_path / "out", env, tmp_path, {}, [])
+
+
+def test_include_limits_the_task_set_and_must_name_real_tasks(tmp_path):
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    write_tasks(tmp_path, ["t1", "t2", "t3"])
+    exp = load_experiment(write_experiment(tmp_path, ["a", "b"], "route", include=["t2"]), tmp_path)
+    assert [p.name for p in exp.task_dirs()] == ["t2"]
+    with pytest.raises(SpecError, match="unknown tasks"):
+        load_experiment(write_experiment(tmp_path, ["a", "b"], "route", include=["nope"]), tmp_path)

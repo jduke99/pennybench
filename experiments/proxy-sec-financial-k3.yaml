@@ -1,0 +1,19 @@
+# Recheck after the gateway kept Claude Code's skills header verbatim: Penny's agent had
+# answered q2 wrong (3457, all holdings, not 2451 stock holdings) in 3 of 4 runs without
+# using the task's 13f-analyzer skill. Same arms as proxy-smoke-k3; one task, 3 reps.
+id: proxy-sec-financial-k3
+arms: [cc-sonnet-native-login, cc-sonnet-proxy-login]
+variable: route
+tasks:
+  dataset: benchflow/skillsbench@v1.1
+  sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+task_skills: with
+cache_isolation: trial
+include: [sec-financial-report]
+stage: smoke-k3
+k: 3
+seed: 20261018
+endpoints:
+  primary: [cost]
+  secondary: [reward, total_tokens, output_tokens, fresh_input_tokens, cache_read_tokens, cache_write_tokens, turns, wall_clock]
+quality: { test: sign, non_inferiority_margin: null }

@@ -76,6 +76,7 @@ class Experiment:
     variable: str
     tasks: Path
     tasks_source: dict[str, str]
+    include: tuple[str, ...]
     task_skills: str
     cache_isolation: str
     sample: int | None
@@ -97,10 +98,11 @@ class Experiment:
         if not found:
             raise SpecError(f"no Harbor tasks under {self.tasks}")
         excluded = {e.task for e in self.exclude}
-        unknown = excluded - {p.name for p in found}
+        unknown = (excluded | set(self.include)) - {p.name for p in found}
         if unknown:
-            raise SpecError(f"exclusions name unknown tasks: {sorted(unknown)}")
-        kept = [p for p in found if p.name not in excluded]
+            raise SpecError(f"exclusions or includes name unknown tasks: {sorted(unknown)}")
+        kept = [p for p in found if p.name not in excluded
+                and (not self.include or p.name in self.include)]
         if self.sample is None:
             return kept
         if self.sample > len(kept):
@@ -253,6 +255,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         variable=variable,
         tasks=tasks,
         tasks_source=tasks_source,
+        include=tuple(raw.get("include") or ()),
         task_skills=task_skills,
         cache_isolation=cache_isolation,
         sample=sample,
