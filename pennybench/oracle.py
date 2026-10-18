@@ -17,8 +17,21 @@ from pennybench.environment import record_environment, remove_stray_images
 from pennybench.harbor import harbor_bin, run_harbor
 from pennybench.spec import Experiment
 
-# One of the paths SkillsBench reference solutions search for their task's skills.
-ORACLE_SKILLS_PATH = "/skills"
+# SkillsBench reference solutions look for their task's skills at /skills, at ~/.claude/skills
+# (where the tasks that copy skills in themselves put them), or at `skills/` relative to the
+# image's working directory. Oracle runs as root.
+ORACLE_SKILLS_PATHS = ("/skills", "/root/.claude/skills")
+
+
+def image_workdir(task_dir: Path) -> str:
+    """The last WORKDIR in the task's Dockerfile, which is where its solution runs."""
+    workdir = "/"
+    dockerfile = task_dir / "environment" / "Dockerfile"
+    for line in dockerfile.read_text().splitlines() if dockerfile.exists() else []:
+        parts = line.strip().split(None, 1)
+        if len(parts) == 2 and parts[0].upper() == "WORKDIR":
+            workdir = parts[1].strip().strip("\"'")
+    return workdir
 
 HOST_VARS = ("PATH", "HOME", "USER", "TMPDIR", "LANG")
 
@@ -37,8 +50,9 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
             "-n", "1", "--no-delete"]
     skills = task_dir / "environment" / "skills"
     if skills.is_dir():
-        argv += ["--mounts", json.dumps([{"type": "bind", "source": str(skills),
-                                          "target": ORACLE_SKILLS_PATH, "read_only": True}])]
+        targets = sorted({*ORACLE_SKILLS_PATHS, str(Path(image_workdir(task_dir)) / "skills")})
+        argv += ["--mounts", json.dumps([{"type": "bind", "source": str(skills), "target": t,
+                                          "read_only": True} for t in targets])]
     outcome = run_harbor(argv, env, out_dir / "harbor", out_dir / "harbor.log")
     result = outcome.result or {}
     environment = record_environment(result.get("trial_name"), out_dir)
@@ -58,7 +72,7 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
 
 
 def run_oracle(experiment: Experiment, config: LocalConfig, workers: int = 2,
-               retry_failed: bool = False,
+               retry_failed: bool = False, only: set[str] | None = None,
                on_result: Callable[[dict], None] = lambda r: None) -> list[dict]:
     """Every task in the experiment's set, minus its exclusions and ignoring any sample.
     Tasks with a saved result are not rerun, except where Harbor itself failed, or any
@@ -67,7 +81,8 @@ def run_oracle(experiment: Experiment, config: LocalConfig, workers: int = 2,
         config.builder.ensure()
     root = oracle_dir(experiment, config)
     excluded = {e.task for e in experiment.exclude}
-    tasks = sorted(p.parent for p in experiment.tasks.glob("*/task.toml") if p.parent.name not in excluded)
+    tasks = sorted(p.parent for p in experiment.tasks.glob("*/task.toml")
+                   if p.parent.name not in excluded and (only is None or p.parent.name in only))
     results, pending = [], []
     for task in tasks:
         saved = root / task.name / "oracle.json"
@@ -96,7 +111,10 @@ def run_oracle(experiment: Experiment, config: LocalConfig, workers: int = 2,
         # the process.
         pool.shutdown(wait=False, cancel_futures=True)
     results.sort(key=lambda r: r["task"])
-    (root / "summary.json").write_text(json.dumps(results, indent=2) + "\n")
+    # The summary covers every saved verdict, so a filtered retry still leaves it complete.
+    everything = sorted((json.loads(f.read_text()) for f in root.glob("*/oracle.json")),
+                        key=lambda r: r["task"])
+    (root / "summary.json").write_text(json.dumps(everything, indent=2) + "\n")
     return results
 
 
