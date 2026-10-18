@@ -1,0 +1,87 @@
+{
+  "version": "2026-10-15",
+  "source": "Bifrost provider datasheet, generated 2026-10-15T22:23:34Z",
+  "unit": "usd_per_token",
+  "order": [
+    "input",
+    "cache_read",
+    "cache_write_5m",
+    "cache_write_1h",
+    "output"
+  ],
+  "models": {
+    "claude-fable-5": {
+      "rates": [
+        1e-05,
+        1e-06,
+        1.25e-05,
+        2e-05,
+        5e-05
+      ]
+    },
+    "claude-fable-5-1": {
+      "rates": [
+        1e-05,
+        2.5e-07,
+        1.25e-05,
+        2e-05,
+        5e-05
+      ]
+    },
+    "claude-haiku-5-5": {
+      "rates": [
+        1e-07,
+        1e-08,
+        1.25e-07,
+        2e-07,
+        5e-07
+      ],
+      "above": {
+        "threshold": 100000,
+        "rates": [
+          5e-07,
+          5e-08,
+          6.25e-07,
+          1e-06,
+          2.5e-06
+        ]
+      }
+    },
+    "claude-opus-5": {
+      "rates": [
+        5e-06,
+        5e-07,
+        6.25e-06,
+        1e-05,
+        2.5e-05
+      ]
+    },
+    "claude-opus-5-5": {
+      "rates": [
+        4e-06,
+        2e-07,
+        5e-06,
+        8e-06,
+        2e-05
+      ]
+    },
+    "claude-sonnet-5": {
+      "rates": [
+        2e-06,
+        2e-07,
+        2.5e-06,
+        4e-06,
+        1e-05
+      ]
+    },
+    "claude-sonnet-5-5": {
+      "rates": [
+        2e-06,
+        1e-07,
+        2.5e-06,
+        4e-06,
+        1e-05
+      ]
+    }
+  }
+}

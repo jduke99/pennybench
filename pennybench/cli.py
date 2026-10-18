@@ -10,10 +10,13 @@ from pathlib import Path
 
 from pennybench.agent_env import build_trial_env
 from pennybench.audit import write_audit
+from pennybench.report import build_report, format_report
 from pennybench.config import LOCAL_CONFIG_NAME, ConfigError, load_local_config
 from pennybench.plan import plan_trials
 from pennybench.run import RunError, check_resumable, execute, start_run
+from pennybench.metrics import MetricsError
 from pennybench.spec import SpecError, load_experiment
+from pennybench.stats import StatsError
 
 
 def read_dotenv(path: Path) -> dict[str, str]:
@@ -85,6 +88,12 @@ def cmd_audit(args) -> int:
     return 0 if passed else 1
 
 
+def cmd_report(args) -> int:
+    report = build_report(Path(args.run_dir).resolve())
+    print(format_report(report))
+    return 0 if report["audit_passed"] else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="pennybench")
     parser.add_argument("--root", default=".", help="PennyBench repo root")
@@ -106,10 +115,14 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("run_dir")
     audit.set_defaults(func=cmd_audit)
 
+    report = sub.add_parser("report", help="audit, then compute metrics and paired stats")
+    report.add_argument("run_dir")
+    report.set_defaults(func=cmd_report)
+
     args = parser.parse_args(argv)
     try:
         return args.func(args)
-    except (ConfigError, SpecError, RunError) as exc:
+    except (ConfigError, SpecError, RunError, MetricsError, StatsError) as exc:
         print(f"pennybench: {exc}", file=sys.stderr)
         return 2
 

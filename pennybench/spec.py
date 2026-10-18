@@ -9,6 +9,8 @@ from typing import Any
 
 import yaml
 
+from pennybench.metrics import METRICS
+
 HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 STAGES = ("audit", "smoke", "smoke-k3", "full")
@@ -179,6 +181,12 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = ()) -> 
     if k < 1:
         raise SpecError(f"{path}: k must be at least 1")
 
+    endpoints = raw.get("endpoints") or {}
+    named = [m for group in endpoints.values() for m in group]
+    unknown = sorted(set(named) - set(METRICS))
+    if unknown:
+        raise SpecError(f"{path}: unknown endpoints {unknown}; known: {list(METRICS)}")
+
     exclude = []
     for item in raw.get("exclude") or []:
         if not isinstance(item, dict) or not item.get("task") or not item.get("reason"):
@@ -195,7 +203,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = ()) -> 
         stage=stage,
         k=k,
         seed=int(_require(raw, "seed", path)),
-        endpoints=raw.get("endpoints") or {},
+        endpoints=endpoints,
         quality=raw.get("quality") or {},
         source=path,
         root=root,
