@@ -6,3 +6,6 @@ model: claude-sonnet-5-5
 effort: medium
 auth: claude-login
 route: endpoint:proxy
+inject:
+  # Same as a `penny claude` launch; keeps trials independent of the account's connectors.
+  settings_file: arms/settings/no-claude-ai-connectors.json
