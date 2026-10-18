@@ -158,3 +158,29 @@ def test_arms_on_different_package_lists_fail(tmp_path):
 def test_completed_trial_without_package_list_fails(tmp_path):
     run = make_run(tmp_path, pair(treatment__env=None))
     assert "package list not recorded" in failed(audit_run(run))["environment"][0]
+
+
+def test_partial_run_accepts_unplanned_trials_but_still_needs_whole_pairs(tmp_path):
+    trials = pair("t1") + pair("t2")
+    run = make_run(tmp_path, trials[:2])
+    manifest = json.loads((run / "run.json").read_text())
+    manifest["plan"] += [{"trial_id": f"0-t2-{r}", "role": r, "task": "t2", "rep": 0}
+                         for r in ("baseline", "treatment")]
+    (run / "run.json").write_text(json.dumps(manifest))
+    assert "complete" in failed(audit_run(run))
+    assert failed(audit_run(run, partial=True)) == {}
+
+
+def test_client_aborted_stream_is_reported_not_failed(tmp_path):
+    aborted = wire_record(2, "api.anthropic.com", {"model": "claude-haiku-5-5"}, response="\x1f",
+                          error="Client disconnected.", decode_error="gzip: EOFError")
+    broken = wire_record(3, "api.anthropic.com", {"model": "claude-haiku-5-5"}, response="\x1f",
+                         decode_error="gzip: EOFError")
+    trials = pair()
+    trials[0]["wire"].append(aborted)
+    checks = {c.name: c for c in audit_run(make_run(tmp_path, trials))}
+    assert checks["capture"].passed and "aborted by the client" in checks["capture"].detail
+    trials = pair()
+    trials[0]["wire"].append(broken)
+    (tmp_path / "b").mkdir()
+    assert "capture" in failed(audit_run(make_run(tmp_path / "b", trials)))

@@ -84,7 +84,7 @@ def cmd_run(args) -> int:
 
 def cmd_audit(args) -> int:
     run_dir = Path(args.run_dir).resolve()
-    passed, path = write_audit(run_dir)
+    passed, path = write_audit(run_dir, args.partial)
     for check in json.loads(path.read_text())["checks"]:
         print(f"{'PASS' if check['passed'] else 'FAIL'}  {check['name']:<10} {check['detail']}")
         for failure in check["failures"]:
@@ -94,7 +94,7 @@ def cmd_audit(args) -> int:
 
 
 def cmd_report(args) -> int:
-    report = build_report(Path(args.run_dir).resolve())
+    report = build_report(Path(args.run_dir).resolve(), args.partial)
     print(format_report(report))
     return 0 if report["audit_passed"] else 1
 
@@ -138,6 +138,8 @@ def main(argv: list[str] | None = None) -> int:
 
     audit = sub.add_parser("audit", help="check a run's artifacts before any stats")
     audit.add_argument("run_dir")
+    audit.add_argument("--partial", action="store_true",
+                        help="accept a run stopped before its plan finished (never a claim)")
     audit.set_defaults(func=cmd_audit)
 
     oracle = sub.add_parser("oracle", help="run every task's reference solution, no model")
@@ -150,6 +152,8 @@ def main(argv: list[str] | None = None) -> int:
 
     report = sub.add_parser("report", help="audit, then compute metrics and paired stats")
     report.add_argument("run_dir")
+    report.add_argument("--partial", action="store_true",
+                        help="accept a run stopped before its plan finished (never a claim)")
     report.set_defaults(func=cmd_report)
 
     args = parser.parse_args(argv)

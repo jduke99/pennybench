@@ -135,8 +135,10 @@ def reward_summary(tasks: dict, margin: float | None, rng: np.random.Generator) 
     return out
 
 
-def claim_status(manifest: dict, audit_passed: bool) -> list[str]:
+def claim_status(manifest: dict, audit_passed: bool, partial: bool = False) -> list[str]:
     reasons = []
+    if partial:
+        reasons.append("run was stopped before its plan finished")
     if manifest["stage"] != "full":
         reasons.append(f"stage is {manifest['stage']!r}, not 'full'")
     if not manifest.get("preregistered"):
@@ -146,7 +148,8 @@ def claim_status(manifest: dict, audit_passed: bool) -> list[str]:
     return reasons
 
 
-def compute_stats(manifest: dict, trials: list[dict], audit_passed: bool) -> dict:
+def compute_stats(manifest: dict, trials: list[dict], audit_passed: bool,
+                  partial: bool = False) -> dict:
     if not audit_passed:
         raise StatsError("audit failed; fix the run before computing stats")
     rng = np.random.default_rng(manifest["seed"])
@@ -165,7 +168,7 @@ def compute_stats(manifest: dict, trials: list[dict], audit_passed: bool) -> dic
             results[metric] = ratio_summary(tasks, metric, rng)
         results[metric]["role"] = ("primary" if metric in endpoints.get("primary", [])
                                    else "secondary" if metric in named else "exploratory")
-    reasons = claim_status(manifest, audit_passed)
+    reasons = claim_status(manifest, audit_passed, partial)
     return {
         "experiment": manifest["experiment"],
         "stage": manifest["stage"],

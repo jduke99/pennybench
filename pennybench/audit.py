@@ -42,6 +42,7 @@ class TrialEvidence:
     environment_sha256: str | None
     environment_error: str | None
     decode_errors: int
+    aborted_calls: int
 
 
 def _expected_host(arm: dict) -> str:
@@ -71,7 +72,10 @@ def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEviden
         environment_error=record.get("environment_error"),
         missing_skills=[name for name in record.get("task_skills") or []
                         if calls and not any(name in c.request_text for c in calls)],
-        decode_errors=sum(1 for r in records if r.get("decode_error")),
+        # A stream the client abandoned (e.g. after a stall) ends mid-body and cannot be
+        # decoded; that is an event worth reporting, not a capture failure.
+        decode_errors=sum(1 for r in records if r.get("decode_error") and not r.get("error")),
+        aborted_calls=sum(1 for r in records if r.get("error")),
     )
 
 
@@ -88,7 +92,9 @@ def _check(name: str, failures: list[str], detail: str) -> Check:
     return Check(name=name, passed=not failures, detail=detail, failures=failures)
 
 
-def audit_run(run_dir: Path) -> list[Check]:
+def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
+    """With `partial`, a run stopped before its plan finished may pass `complete`; every
+    other check still applies, and pairing still requires both arms of each finished pair."""
     manifest, evidence = load_evidence(run_dir)
     arms = manifest["arms"]
     planned = {t["trial_id"] for t in manifest["plan"]}
@@ -96,15 +102,18 @@ def audit_run(run_dir: Path) -> list[Check]:
     checks = []
 
     missing = sorted(planned - {e.trial_id for e in final})
-    checks.append(_check("complete", missing,
-                         f"{len(final)} of {len(planned)} planned trials finished"))
+    checks.append(_check("complete", [] if partial else missing,
+                         f"{len(final)} of {len(planned)} planned trials finished"
+                         + (" (partial run accepted)" if partial and missing else "")))
 
     checks.append(_check(
         "capture",
         [f"{e.trial_id}: no model calls captured" for e in final
          if e.status == "complete" and e.n_model_calls == 0]
         + [f"{e.trial_id}: {e.decode_errors} undecodable bodies" for e in final if e.decode_errors],
-        "every completed trial has decodable model calls on the wire"))
+        "every completed trial has decodable model calls on the wire"
+        + "".join(f"; {e.trial_id}: {e.aborted_calls} call(s) aborted by the client"
+                  for e in final if e.aborted_calls)))
 
     route_fail = []
     for e in final:
@@ -181,10 +190,11 @@ def by_pair_env(evidence: list[TrialEvidence]) -> dict[tuple, dict[str, str]]:
     return pairs
 
 
-def write_audit(run_dir: Path) -> tuple[bool, Path]:
-    checks = audit_run(run_dir)
+def write_audit(run_dir: Path, partial: bool = False) -> tuple[bool, Path]:
+    checks = audit_run(run_dir, partial)
     passed = all(c.passed for c in checks)
     path = run_dir / "audit.json"
-    path.write_text(json.dumps({"passed": passed, "checks": [asdict(c) for c in checks]},
+    path.write_text(json.dumps({"passed": passed, "partial": partial,
+                                "checks": [asdict(c) for c in checks]},
                                indent=2) + "\n")
     return passed, path

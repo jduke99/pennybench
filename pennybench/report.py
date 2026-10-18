@@ -10,15 +10,15 @@ from pennybench.metrics import METRICS, run_metrics
 from pennybench.stats import compute_stats
 
 
-def build_report(run_dir: Path) -> dict:
-    audit_passed, audit_path = write_audit(run_dir)
+def build_report(run_dir: Path, partial: bool = False) -> dict:
+    audit_passed, audit_path = write_audit(run_dir, partial)
     report = {"run_dir": str(run_dir), "audit_passed": audit_passed, "audit": str(audit_path)}
     if not audit_passed:
         return report
     manifest = json.loads((run_dir / "run.json").read_text())
     trials = run_metrics(run_dir)
     (run_dir / "metrics.json").write_text(json.dumps(trials, indent=2) + "\n")
-    stats = compute_stats(manifest, trials, audit_passed)
+    stats = compute_stats(manifest, trials, audit_passed, partial)
     (run_dir / "stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     report["stats"] = stats
     return report
