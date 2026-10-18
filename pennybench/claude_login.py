@@ -140,3 +140,18 @@ def remove_copies(directory: Path) -> list[str]:
         path.unlink()
         removed.append(str(path.relative_to(directory)))
     return removed
+
+
+def sweep_leftovers(run_dir: Path) -> list[str]:
+    """Remove login copies a stopped run left behind: staged copies in the temp directory and
+    copies Harbor brought back into the run's trial logs. Runs start one at a time, so any
+    staged copy that exists before a run starts is stale."""
+    removed = []
+    for staged in Path(tempfile.gettempdir()).glob("pennybench-login-*"):
+        for p in staged.glob("*"):
+            p.unlink()
+        staged.rmdir()
+        removed.append(str(staged))
+    if run_dir.exists():
+        removed += [str(run_dir / r) for r in remove_copies(run_dir)]
+    return removed

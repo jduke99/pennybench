@@ -14,7 +14,7 @@ from typing import Callable, Mapping
 from pennybench.agent_cache import ensure_claude_code
 from pennybench.agent_env import build_trial_env
 from pennybench.capture import ANTHROPIC_HOST, WireCapture, capture_hosts
-from pennybench.claude_login import StagedLogin, ensure_login, remove_copies
+from pennybench.claude_login import StagedLogin, ensure_login, remove_copies, sweep_leftovers
 from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
@@ -283,6 +283,7 @@ def start_egress_capture(run_dir: Path, experiment: Experiment,
 def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
             environ: Mapping[str, str], limit: int | None = None,
             on_trial: Callable[[PlannedTrial, dict | None], None] = lambda t, r: None) -> None:
+    sweep_leftovers(run_dir)
     done = completed_trials(run_dir) if (run_dir / "trials").exists() else set()
     pending = [t for t in plan_trials(experiment) if t.trial_id not in done]
     if limit is not None:

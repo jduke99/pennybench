@@ -51,3 +51,16 @@ def test_copies_in_trial_logs_are_removed(tmp_path):
     (nested / ".credentials.json").write_text("{}")
     assert cl.remove_copies(tmp_path) == ["harbor/job/t/agent/sessions/.credentials.json"]
     assert not (nested / ".credentials.json").exists()
+
+
+def test_sweep_removes_stale_staged_and_trial_copies(tmp_path, monkeypatch):
+    import tempfile
+    monkeypatch.setattr(tempfile, "gettempdir", lambda: str(tmp_path / "tmp"))
+    staged = tmp_path / "tmp" / "pennybench-login-abc"
+    staged.mkdir(parents=True)
+    (staged / "credentials.json").write_text("{}")
+    trial = tmp_path / "run" / "trials" / "t" / "agent" / "sessions"
+    trial.mkdir(parents=True)
+    (trial / ".credentials.json").write_text("{}")
+    removed = cl.sweep_leftovers(tmp_path / "run")
+    assert not staged.exists() and not (trial / ".credentials.json").exists() and len(removed) == 2
