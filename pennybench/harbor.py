@@ -52,6 +52,10 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
     if "append_system_prompt_file" in arm.inject:
         text = (root / arm.inject["append_system_prompt_file"]).read_text()
         argv += ["--ak", f"append_system_prompt={text}"]
+    if "instruction_append_file" in arm.inject:
+        argv += ["--extra-instruction-path", str(root / arm.inject["instruction_append_file"])]
+    if "skills_dir" in arm.inject:
+        argv += ["--skill", str(root / arm.inject["skills_dir"])]
     if "settings_file" in arm.inject:
         argv += ["--ak", f"config={root / arm.inject['settings_file']}"]
     for key, value in sorted({**trial_env.agent_env, **runner_env}.items()):

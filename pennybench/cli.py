@@ -8,7 +8,9 @@ import os
 import sys
 from pathlib import Path
 
+from pennybench.agent_cache import AgentCacheError
 from pennybench.agent_env import build_trial_env
+from pennybench.datasets import DatasetError
 from pennybench.audit import write_audit
 from pennybench.report import build_report, format_report
 from pennybench.config import LOCAL_CONFIG_NAME, ConfigError, load_local_config
@@ -37,7 +39,8 @@ def read_dotenv(path: Path) -> dict[str, str]:
 def _load(args):
     root = Path(args.root).resolve()
     config = load_local_config(root / LOCAL_CONFIG_NAME)
-    experiment = load_experiment(Path(args.experiment).resolve(), root)
+    experiment = load_experiment(Path(args.experiment).resolve(), root,
+                                 dataset_store=config.store / ".datasets")
     environ = {**os.environ, **read_dotenv(root / ".env")}
     return root, config, experiment, environ
 
@@ -122,7 +125,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         return args.func(args)
-    except (ConfigError, SpecError, RunError, MetricsError, StatsError) as exc:
+    except (ConfigError, SpecError, RunError, MetricsError, StatsError, DatasetError,
+            AgentCacheError) as exc:
         print(f"pennybench: {exc}", file=sys.stderr)
         return 2
 

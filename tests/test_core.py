@@ -202,3 +202,49 @@ def test_secret_scan_finds_leaks_and_passes_clean_trees(tmp_path):
     (tmp_path / "sub").mkdir()
     (tmp_path / "sub" / "log.txt").write_text(f"token={OAUTH}")
     assert find_secret_leaks(tmp_path, (OAUTH, PROXY_KEY)) == ["sub/log.txt"]
+
+
+# Injected directories, task samples, datasets
+
+def test_injected_directory_is_hashed_by_content(tmp_path):
+    for name, text in (("s1", "v1"), ("s2", "v2")):
+        (tmp_path / name / "skill").mkdir(parents=True)
+        (tmp_path / name / "skill" / "SKILL.md").write_text(text)
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", inject={"skills_dir": "s1/skill"})
+    write_tasks(tmp_path, ["t1"])
+    assert load_experiment(write_experiment(tmp_path, ["a", "b"], "inject"), tmp_path)
+    write_arm(tmp_path, "a", inject={"skills_dir": "s2/skill"})
+    assert load_experiment(write_experiment(tmp_path, ["a", "b"], "inject"), tmp_path)
+    (tmp_path / "s2" / "skill" / "SKILL.md").write_text("v1")
+    with pytest.raises(SpecError, match="do not differ"):
+        load_experiment(write_experiment(tmp_path, ["a", "b"], "inject"), tmp_path)
+
+
+def test_sample_is_seeded_stable_and_excludes_first(tmp_path):
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    write_tasks(tmp_path, [f"t{i}" for i in range(20)])
+    exp = load_experiment(write_experiment(tmp_path, ["a", "b"], "route", sample=5), tmp_path)
+    first = [p.name for p in exp.task_dirs()]
+    k3 = load_experiment(write_experiment(tmp_path, ["a", "b"], "route", sample=5, k=3), tmp_path)
+    assert len(first) == 5 and [p.name for p in k3.task_dirs()] == first
+    excluded = load_experiment(write_experiment(
+        tmp_path, ["a", "b"], "route", sample=5, exclude=[{"task": first[0], "reason": "x"}]),
+        tmp_path)
+    assert first[0] not in [p.name for p in excluded.task_dirs()]
+    with pytest.raises(SpecError, match="exceeds"):
+        load_experiment(write_experiment(tmp_path, ["a", "b"], "route", sample=50), tmp_path)
+
+
+def test_dataset_must_be_pinned_and_match_its_hash(tmp_path):
+    from pennybench.datasets import DatasetError, dataset_dir, ensure_dataset
+    from pennybench.digest import tree_sha256
+    with pytest.raises(DatasetError, match="fixed ref"):
+        dataset_dir("org/name@latest", tmp_path)
+    target = dataset_dir("org/name@v1", tmp_path)
+    (target / "t1").mkdir(parents=True)
+    (target / "t1" / "task.toml").write_text("x")
+    assert ensure_dataset("org/name@v1", tree_sha256(target), tmp_path) == target
+    with pytest.raises(DatasetError, match="expected"):
+        ensure_dataset("org/name@v1", "0" * 64, tmp_path)

@@ -1,0 +1,11 @@
+id: cc-sonnet-ponytail
+harness: claude-code
+harness_version: "2.1.302"
+model: claude-sonnet-5-5
+effort: medium
+auth: claude-subscription
+route: native
+inject:
+  instruction_append_file: arms/ponytail/ruleset.txt
+  skills_dir: arms/ponytail/skills/ponytail
+adoption_marker: PONYTAIL MODE ACTIVE

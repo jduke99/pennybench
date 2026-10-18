@@ -1,0 +1,16 @@
+# Calibration: replicate JetBrains' ponytail result (part 3) on our harness.
+id: ponytail-smoke
+arms: [cc-sonnet-stock, cc-sonnet-ponytail]
+variable: inject
+tasks:
+  dataset: benchflow/skillsbench@v1.1
+  sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+sample: 10
+exclude: []
+stage: smoke
+k: 1
+seed: 20261018
+endpoints:
+  primary: [cost]
+  secondary: [reward, loc_written, output_tokens, fresh_input_tokens, total_tokens, turns, wall_clock]
+quality: { test: sign, non_inferiority_margin: null }

@@ -17,7 +17,8 @@ from pennybench.capture import WireCapture, capture_hosts
 from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
 from pennybench.plan import PlannedTrial, plan_trials
-from pennybench.spec import Arm, Experiment, file_sha256
+from pennybench.digest import file_sha256
+from pennybench.spec import Arm, Experiment
 
 # Statuses that end a trial for good; anything else is retried on resume.
 FINAL_STATUSES = ("complete", "agent_error")
@@ -111,6 +112,8 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "created_at": _now(),
         "harbor_version": harbor_version({"PATH": environ.get("PATH", "")}),
         "variable": experiment.variable,
+        "tasks": experiment.tasks_source,
+        "sample": experiment.sample,
         "stage": experiment.stage,
         "k": experiment.k,
         "seed": experiment.seed,

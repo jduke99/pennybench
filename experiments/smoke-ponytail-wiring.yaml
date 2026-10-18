@@ -1,0 +1,12 @@
+# Wiring check for the ponytail arms on the trivial smoke task: injection reaches the model,
+# the skill is installed, and the baseline stays clean. Not a measurement.
+id: smoke-ponytail-wiring
+arms: [cc-sonnet-stock, cc-sonnet-ponytail]
+variable: inject
+tasks: tasks/smoke
+exclude: []
+stage: audit
+k: 1
+seed: 20261018
+endpoints:
+  primary: [cost]

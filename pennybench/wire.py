@@ -121,7 +121,7 @@ def model_calls(records: list[dict]) -> list[ModelCall]:
             responded_model=responded,
             usage=usage,
             tool_uses=response_tool_uses(record.get("response_body")),
-            request_text=body if isinstance(body, str) else json.dumps(body),
+            request_text=body if isinstance(body, str) else json.dumps(body, ensure_ascii=False),
             error=record.get("error"),
         ))
     return calls

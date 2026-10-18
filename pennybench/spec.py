@@ -2,22 +2,26 @@
 
 from __future__ import annotations
 
-import hashlib
+import random
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import yaml
 
+from pennybench.datasets import ensure_dataset
+from pennybench.digest import content_sha256
 from pennybench.metrics import METRICS
 
 HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 STAGES = ("audit", "smoke", "smoke-k3", "full")
-INJECT_KEYS = ("append_system_prompt_file", "settings_file")
-
-# Fields that may legitimately differ between arms without being the experiment's variable.
-_IDENTITY_FIELDS = ("id", "adoption_marker")
+# append_system_prompt_file: text appended to Claude Code's system prompt.
+# instruction_append_file: text appended after the task instruction, separated by a blank line.
+# settings_file: a Claude Code settings JSON layer.
+# skills_dir: one skill directory installed for the agent.
+INJECT_KEYS = ("append_system_prompt_file", "instruction_append_file", "settings_file",
+               "skills_dir")
 
 
 class SpecError(ValueError):
@@ -50,7 +54,7 @@ class Arm:
             "effort": self.effort,
             "auth": self.auth,
             "route": self.route,
-            "inject": {k: file_sha256(base_dir / v) for k, v in sorted(self.inject.items())},
+            "inject": {k: injected_sha256(base_dir / v) for k, v in sorted(self.inject.items())},
         }
 
 
@@ -67,6 +71,8 @@ class Experiment:
     treatment: Arm
     variable: str
     tasks: Path
+    tasks_source: dict[str, str]
+    sample: int | None
     exclude: tuple[Exclusion, ...]
     stage: str
     k: int
@@ -88,13 +94,19 @@ class Experiment:
         unknown = excluded - {p.name for p in found}
         if unknown:
             raise SpecError(f"exclusions name unknown tasks: {sorted(unknown)}")
-        return [p for p in found if p.name not in excluded]
+        kept = [p for p in found if p.name not in excluded]
+        if self.sample is None:
+            return kept
+        if self.sample > len(kept):
+            raise SpecError(f"sample {self.sample} exceeds the {len(kept)} available tasks")
+        # Depends only on the task set and seed, so stages sharing both share a sample.
+        return sorted(random.Random(self.seed).sample(kept, self.sample))
 
 
-def file_sha256(path: Path) -> str:
-    if not path.is_file():
-        raise SpecError(f"injected file not found: {path}")
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+def injected_sha256(path: Path) -> str:
+    if not path.exists():
+        raise SpecError(f"injected path not found: {path}")
+    return content_sha256(path)
 
 
 def _require(raw: dict, key: str, where: Path) -> Any:
@@ -163,7 +175,21 @@ def check_one_variable(baseline: Arm, treatment: Arm, variable: str, base_dir: P
         )
 
 
-def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = ()) -> Experiment:
+def resolve_tasks(raw_tasks: Any, root: Path, dataset_store: Path | None,
+                  where: Path) -> tuple[Path, dict[str, str]]:
+    """`tasks` is a repo-relative path, or {dataset: org/name@ref, sha256: <tree hash>}."""
+    if isinstance(raw_tasks, str):
+        return root / raw_tasks, {"path": raw_tasks}
+    if isinstance(raw_tasks, dict) and raw_tasks.get("dataset") and raw_tasks.get("sha256"):
+        if dataset_store is None:
+            raise SpecError(f"{where}: a dataset task set needs the artifact store")
+        source = {"dataset": raw_tasks["dataset"], "sha256": raw_tasks["sha256"]}
+        return ensure_dataset(source["dataset"], source["sha256"], dataset_store), source
+    raise SpecError(f"{where}: tasks must be a path or {{dataset, sha256}}")
+
+
+def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
+                    dataset_store: Path | None = None) -> Experiment:
     raw = yaml.safe_load(path.read_text()) or {}
     arm_ids = _require(raw, "arms", path)
     if not isinstance(arm_ids, list) or len(arm_ids) != 2:
@@ -180,6 +206,12 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = ()) -> 
     k = int(raw.get("k", 1))
     if k < 1:
         raise SpecError(f"{path}: k must be at least 1")
+
+    tasks, tasks_source = resolve_tasks(_require(raw, "tasks", path), root, dataset_store, path)
+    sample = raw.get("sample")
+    if sample is not None and int(sample) < 1:
+        raise SpecError(f"{path}: sample must be a positive number of tasks")
+    sample = int(sample) if sample is not None else None
 
     endpoints = raw.get("endpoints") or {}
     named = [m for group in endpoints.values() for m in group]
@@ -198,7 +230,9 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = ()) -> 
         baseline=baseline,
         treatment=treatment,
         variable=variable,
-        tasks=root / _require(raw, "tasks", path),
+        tasks=tasks,
+        tasks_source=tasks_source,
+        sample=sample,
         exclude=tuple(exclude),
         stage=stage,
         k=k,
