@@ -10,6 +10,8 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from pennybench.builder import Builder
+
 LOCAL_CONFIG_NAME = "pennybench.local.toml"
 
 AUTH_KINDS = ("oauth", "api_key")
@@ -39,6 +41,7 @@ class LocalConfig:
     store: Path
     endpoints: dict[str, Endpoint]
     auth: dict[str, AuthProfile]
+    builder: Builder | None = None
 
     def endpoint(self, name: str) -> Endpoint:
         if name not in self.endpoints:
@@ -80,4 +83,12 @@ def load_local_config(path: Path) -> LocalConfig:
             raise ConfigError(f"auth profile {name!r} needs token_env")
         auth[name] = AuthProfile(name=name, kind=kind, token_env=spec["token_env"])
 
-    return LocalConfig(store=store, endpoints=endpoints, auth=auth)
+    builder = None
+    docker = raw.get("docker", {})
+    if docker.get("builder"):
+        cap = docker.get("build_cache_cap_gb")
+        if cap is not None and float(cap) <= 0:
+            raise ConfigError("docker.build_cache_cap_gb must be positive")
+        builder = Builder(name=docker["builder"], cache_cap_gb=float(cap) if cap else None)
+
+    return LocalConfig(store=store, endpoints=endpoints, auth=auth, builder=builder)

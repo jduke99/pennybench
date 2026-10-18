@@ -5,7 +5,11 @@ variable: inject
 tasks:
   dataset: benchflow/skillsbench@v1.1
   sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
-exclude: []
+exclude:
+  - task: bike-rebalance
+    reason: >-
+      sets allow_internet = false; Harbor 0.24's Docker environment rejects no-network mode,
+      and an offline container could not reach the capture proxy or the model
 stage: full
 k: 1
 seed: 20261018

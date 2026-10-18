@@ -16,7 +16,9 @@ from pennybench.report import build_report, format_report
 from pennybench.config import LOCAL_CONFIG_NAME, ConfigError, load_local_config
 from pennybench.plan import plan_trials
 from pennybench.run import RunError, check_resumable, execute, start_run
+from pennybench.builder import BuilderError
 from pennybench.metrics import MetricsError
+from pennybench.oracle import failed, oracle_dir, run_oracle
 from pennybench.spec import SpecError, load_experiment
 from pennybench.stats import StatsError
 
@@ -97,6 +99,24 @@ def cmd_report(args) -> int:
     return 0 if report["audit_passed"] else 1
 
 
+def cmd_oracle(args) -> int:
+    _, config, experiment, _ = _load(args)
+    print(f"oracle      {oracle_dir(experiment, config)}")
+
+    def show(record):
+        mark = "FAIL" if failed(record) else "ok  "
+        print(f"  {mark} {record['task']} reward={record['reward']} {record['exception_type'] or ''}",
+              flush=True)
+
+    results = run_oracle(experiment, config, workers=args.workers, on_result=show)
+    bad = [r for r in results if failed(r)]
+    print(f"{len(results) - len(bad)} of {len(results)} tasks pass their reference solution")
+    for r in bad:
+        print(f"  exclude? {r['task']}: status={r['status']} reward={r['reward']} "
+              f"{r['exception_type'] or ''}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="pennybench")
     parser.add_argument("--root", default=".", help="PennyBench repo root")
@@ -118,6 +138,11 @@ def main(argv: list[str] | None = None) -> int:
     audit.add_argument("run_dir")
     audit.set_defaults(func=cmd_audit)
 
+    oracle = sub.add_parser("oracle", help="run every task's reference solution, no model")
+    oracle.add_argument("experiment")
+    oracle.add_argument("--workers", type=int, default=2)
+    oracle.set_defaults(func=cmd_oracle)
+
     report = sub.add_parser("report", help="audit, then compute metrics and paired stats")
     report.add_argument("run_dir")
     report.set_defaults(func=cmd_report)
@@ -126,7 +151,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         return args.func(args)
     except (ConfigError, SpecError, RunError, MetricsError, StatsError, DatasetError,
-            AgentCacheError) as exc:
+            AgentCacheError, BuilderError) as exc:
         print(f"pennybench: {exc}", file=sys.stderr)
         return 2
 

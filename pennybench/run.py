@@ -94,6 +94,8 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
     if git.dirty and not allow_dirty:
         raise RunError("working tree is dirty; commit the experiment first so the run is "
                        "pre-registered, or pass --allow-dirty for a run that is not a claim")
+    if config.builder:
+        config.builder.ensure()
     builds = {}
     for arm in (experiment.baseline, experiment.treatment):
         build_trial_env(arm, config, environ)
@@ -125,6 +127,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
             "treatment": _arm_record(experiment.treatment, config, experiment.root),
         },
         "agent_builds": builds,
+        "task_image_builder": config.builder.record() if config.builder else None,
         "capture_hosts": experiment_capture_hosts(experiment, config),
         # The isolation audit looks for this path in request bytes: a hit means host files or
         # config reached the model.
@@ -169,8 +172,8 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
                               capture.mounts() + build.mounts())
         started = _now()
         t0 = time.monotonic()
-        outcome = run_harbor(argv, trial_env.host_env, trial_dir / "harbor",
-                             trial_dir / "harbor.log")
+        host_env = {**trial_env.host_env, **(config.builder.env() if config.builder else {})}
+        outcome = run_harbor(argv, host_env, trial_dir / "harbor", trial_dir / "harbor.log")
         wall = time.monotonic() - t0
     finally:
         capture.stop()
@@ -218,6 +221,11 @@ def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
         # Whole pairs only, so a partial run never leaves one arm ahead of the other.
         pairs = sorted({t.pair for t in pending})[:limit]
         pending = [t for t in pending if t.pair in pairs]
+    if config.builder:
+        config.builder.ensure()
     for trial in pending:
         on_trial(trial, None)
         on_trial(trial, run_trial(trial, experiment, config, environ, run_dir))
+        # Both trials of a pair share the task image, so the cache is trimmed between pairs.
+        if config.builder and trial.position == 1:
+            config.builder.enforce_cap()

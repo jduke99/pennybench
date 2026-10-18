@@ -248,3 +248,26 @@ def test_dataset_must_be_pinned_and_match_its_hash(tmp_path):
     assert ensure_dataset("org/name@v1", tree_sha256(target), tmp_path) == target
     with pytest.raises(DatasetError, match="expected"):
         ensure_dataset("org/name@v1", "0" * 64, tmp_path)
+
+
+# Builder config and oracle verdicts
+
+def test_docker_builder_config(tmp_path):
+    path = tmp_path / "pennybench.local.toml"
+    path.write_text('[docker]\nbuilder = "pb"\nbuild_cache_cap_gb = 40\n')
+    config = load_local_config(path)
+    assert config.builder.env() == {"BUILDX_BUILDER": "pb"}
+    assert config.builder.cache_cap_gb == 40
+    path.write_text("")
+    assert load_local_config(path).builder is None
+    path.write_text('[docker]\nbuilder = "pb"\nbuild_cache_cap_gb = 0\n')
+    with pytest.raises(ConfigError, match="positive"):
+        load_local_config(path)
+
+
+def test_oracle_failure_rule():
+    from pennybench.oracle import failed
+    assert not failed({"status": "complete", "reward": 1.0})
+    assert failed({"status": "complete", "reward": 0.5})
+    assert failed({"status": "complete", "reward": None})
+    assert failed({"status": "agent_error", "reward": 1.0})

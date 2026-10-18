@@ -19,3 +19,9 @@ token_env = "CLAUDE_CODE_OAUTH_TOKEN"
 [auth.anthropic-api]
 kind = "api_key"
 token_env = "ANTHROPIC_API_KEY"
+
+# Optional: build task images on a dedicated buildx builder and cap its cache. Least recently
+# used layers are evicted after each pair; evicted task images are rebuilt when next needed.
+# [docker]
+# builder = "pennybench"
+# build_cache_cap_gb = 40
