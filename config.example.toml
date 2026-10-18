@@ -1,0 +1,20 @@
+# Copy to pennybench.local.toml (gitignored). Values here are placeholders.
+
+[artifacts]
+store = "~/pennybench-runs"
+
+# Named endpoints. An arm routes through one with `route = "endpoint:<name>"`.
+# [endpoints.example-proxy]
+# base_url = "https://proxy.example.com"
+# auth_env = "EXAMPLE_PROXY_KEY"   # env var name, never the secret
+
+# Auth profiles. An arm selects one with `auth = "<name>"`.
+[auth.anthropic-api]
+token_env = "ANTHROPIC_API_KEY"
+
+[auth.claude-subscription]
+token_env = "CLAUDE_CODE_OAUTH_TOKEN"
+
+# Extra directories of arm specs kept outside this repo.
+[arms_dir]
+# private = "~/pennybench-private/arms"
