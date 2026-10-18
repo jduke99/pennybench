@@ -1,0 +1,7 @@
+id: cc-haiku-native
+harness: claude-code
+harness_version: "2.1.302"
+model: claude-haiku-5-5
+effort: null
+auth: claude-subscription
+route: native
