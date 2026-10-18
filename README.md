@@ -52,7 +52,9 @@ Requirements: macOS or Linux, Docker running, [uv](https://docs.astral.sh/uv/), 
      `kind = "api_key"` for an API key. `token_env` names the variable that holds it.
    - `[endpoints.<name>]`: only for proxy arms (see below).
    - `[docker]`: `builder = "pennybench"` and `build_cache_cap_gb = 40` keep task images on a
-     dedicated build cache capped at 40 GB, separate from your other projects' cache.
+     dedicated build cache, separate from your other projects' cache, trimmed to 40 GB after
+     each pair (and after each oracle task). The cap is soft: layers of builds still running
+     cannot be evicted, so with several large builds in flight the cache can briefly exceed it.
 
 3. **Secrets.** Put them in `.env` (gitignored), never in tracked files:
 
@@ -152,6 +154,8 @@ the commit, or the trial plan has changed.
 | route | a model call went to a host other than the one its arm declares |
 | pins | the agent version or model differs from the arm spec |
 | adoption | the treatment marker is missing from a treatment trial, or present in a baseline trial |
+| task_skills | with `task_skills: with`, an installed task skill never appears in the trial's requests |
+| environment | a completed trial has no package list, or the two arms of a pair ran on different ones |
 | isolation | your home-directory path appears in a request (host config leaked in) |
 | pairing | a pair has only one arm, or an excluded task ran |
 
@@ -202,6 +206,7 @@ variable: inject                            # the only field allowed to differ
 tasks:                                      # a repo path, or a pinned registry dataset
   dataset: benchflow/skillsbench@v1.1
   sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+task_skills: with                           # install each task's own skills in both arms
 sample: 10                                  # optional seeded subset, after exclusions
 exclude:
   - task: bike-rebalance
@@ -223,6 +228,12 @@ To pin a new dataset, download it once and record its content hash:
 ```
 
 Refs must be fixed tags; `@latest` is rejected.
+
+Pinning the task files does not pin what their Dockerfiles install: an unpinned `pip install`
+can resolve to different versions on a later day. Each trial therefore records the packages
+actually installed (`environment.txt`, hashed in `trial.json`). Compare those hashes across
+runs to see whether the environment drifted. Image digests are not used because they change on
+every rebuild, even when the packages do not.
 
 ## Proxy arms (for example, PennyRouter)
 
@@ -248,6 +259,7 @@ Start and stop the proxy yourself; PennyBench never does.
     run.json                          commit, experiment hash, arms, pins, builds, full plan
     trials/<pair>-<task>-r<rep>-<role>/
       trial.json                      status, reward, versions, sha256 of every artifact
+      environment.txt                 every pip/apt/apk/npm package in the task image
       wire/wire.jsonl                 every model request and response (credentials hashed)
       harbor/                         Harbor's own trial output and transcripts
     audit.json  metrics.json  stats.json

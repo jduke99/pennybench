@@ -16,6 +16,7 @@ from pennybench.metrics import METRICS
 HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 STAGES = ("audit", "smoke", "smoke-k3", "full")
+TASK_SKILLS = ("with", "without")
 # append_system_prompt_file: text appended to Claude Code's system prompt.
 # instruction_append_file: text appended after the task instruction, separated by a blank line.
 # settings_file: a Claude Code settings JSON layer.
@@ -72,6 +73,7 @@ class Experiment:
     variable: str
     tasks: Path
     tasks_source: dict[str, str]
+    task_skills: str
     sample: int | None
     exclude: tuple[Exclusion, ...]
     stage: str
@@ -101,6 +103,15 @@ class Experiment:
             raise SpecError(f"sample {self.sample} exceeds the {len(kept)} available tasks")
         # Depends only on the task set and seed, so stages sharing both share a sample.
         return sorted(random.Random(self.seed).sample(kept, self.sample))
+
+
+def task_skill_dirs(task_dir: Path) -> list[Path]:
+    """The task's own skills: each folder under environment/skills that holds a SKILL.md.
+    Loose files beside them (READMEs, licenses) are not skills and are not installed."""
+    root = task_dir / "environment" / "skills"
+    if not root.is_dir():
+        return []
+    return sorted(p for p in root.iterdir() if p.is_dir() and (p / "SKILL.md").is_file())
 
 
 def injected_sha256(path: Path) -> str:
@@ -208,6 +219,9 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         raise SpecError(f"{path}: k must be at least 1")
 
     tasks, tasks_source = resolve_tasks(_require(raw, "tasks", path), root, dataset_store, path)
+    task_skills = _require(raw, "task_skills", path)
+    if task_skills not in TASK_SKILLS:
+        raise SpecError(f"{path}: task_skills must be one of {TASK_SKILLS}")
     sample = raw.get("sample")
     if sample is not None and int(sample) < 1:
         raise SpecError(f"{path}: sample must be a positive number of tasks")
@@ -232,6 +246,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         variable=variable,
         tasks=tasks,
         tasks_source=tasks_source,
+        task_skills=task_skills,
         sample=sample,
         exclude=tuple(exclude),
         stage=stage,

@@ -108,7 +108,8 @@ def cmd_oracle(args) -> int:
         print(f"  {mark} {record['task']} reward={record['reward']} {record['exception_type'] or ''}",
               flush=True)
 
-    results = run_oracle(experiment, config, workers=args.workers, on_result=show)
+    results = run_oracle(experiment, config, workers=args.workers,
+                         retry_failed=args.retry_failed, on_result=show)
     bad = [r for r in results if failed(r)]
     print(f"{len(results) - len(bad)} of {len(results)} tasks pass their reference solution")
     for r in bad:
@@ -141,6 +142,8 @@ def main(argv: list[str] | None = None) -> int:
     oracle = sub.add_parser("oracle", help="run every task's reference solution, no model")
     oracle.add_argument("experiment")
     oracle.add_argument("--workers", type=int, default=2)
+    oracle.add_argument("--retry-failed", action="store_true",
+                        help="rerun tasks whose saved verdict is a failure")
     oracle.set_defaults(func=cmd_oracle)
 
     report = sub.add_parser("report", help="audit, then compute metrics and paired stats")

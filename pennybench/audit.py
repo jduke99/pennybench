@@ -38,6 +38,9 @@ class TrialEvidence:
     n_model_calls: int
     marker_hits: int
     home_hits: int
+    missing_skills: list[str]
+    environment_sha256: str | None
+    environment_error: str | None
     decode_errors: int
 
 
@@ -63,6 +66,11 @@ def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEviden
         n_model_calls=len(calls),
         marker_hits=sum(1 for c in calls if any(m in c.request_text for m in markers)),
         home_hits=sum(1 for c in calls if home and home in c.request_text),
+        # Claude Code lists installed skills by name in its requests.
+        environment_sha256=record.get("environment_sha256"),
+        environment_error=record.get("environment_error"),
+        missing_skills=[name for name in record.get("task_skills") or []
+                        if calls and not any(name in c.request_text for c in calls)],
         decode_errors=sum(1 for r in records if r.get("decode_error")),
     )
 
@@ -134,6 +142,21 @@ def audit_run(run_dir: Path) -> list[Check]:
         if has_marker else "no adoption marker declared; adoption not checked"))
 
     checks.append(_check(
+        "task_skills",
+        [f"{e.trial_id}: skills never seen by the model: {e.missing_skills}"
+         for e in final if e.missing_skills],
+        f"task skills {manifest.get('task_skills', 'without')}: every installed task skill "
+        "appears in the trial's requests"))
+
+    env_fail = [f"{e.trial_id}: package list not recorded ({e.environment_error})"
+                for e in final if e.status == "complete" and not e.environment_sha256]
+    for (task, rep), roles in by_pair_env(final).items():
+        if len(set(roles.values())) > 1:
+            env_fail.append(f"{task} r{rep}: arms ran on different package lists")
+    checks.append(_check("environment", env_fail,
+                         "every completed trial recorded its packages; both arms of a pair match"))
+
+    checks.append(_check(
         "isolation",
         [f"{e.trial_id}: host home path in {e.home_hits} requests" for e in final if e.home_hits],
         "no host home-directory path appears in any request"))
@@ -148,6 +171,14 @@ def audit_run(run_dir: Path) -> list[Check]:
     checks.append(_check("pairing", sym_fail,
                          "every finished pair has both arms; excluded tasks never ran"))
     return checks
+
+
+def by_pair_env(evidence: list[TrialEvidence]) -> dict[tuple, dict[str, str]]:
+    pairs: dict[tuple, dict[str, str]] = {}
+    for e in evidence:
+        if e.environment_sha256:
+            pairs.setdefault((e.task, e.rep), {})[e.role] = e.environment_sha256
+    return pairs
 
 
 def write_audit(run_dir: Path) -> tuple[bool, Path]:

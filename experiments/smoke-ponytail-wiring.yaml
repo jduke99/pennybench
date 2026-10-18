@@ -4,6 +4,7 @@ id: smoke-ponytail-wiring
 arms: [cc-sonnet-stock, cc-sonnet-ponytail]
 variable: inject
 tasks: tasks/smoke
+task_skills: without
 exclude: []
 stage: audit
 k: 1

@@ -30,7 +30,7 @@ def harbor_version(env: dict[str, str]) -> str:
 
 def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
                    root: Path, runner_env: dict[str, str],
-                   mounts: list[dict]) -> list[str]:
+                   mounts: list[dict], task_skills: list[Path] = ()) -> list[str]:
     """`runner_env` is what PennyBench itself sets in every trial (capture proxy, updater
     off); an arm may not override it."""
     clash = set(runner_env) & set(trial_env.agent_env)
@@ -45,6 +45,8 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         "-m", arm.model,
         "-o", str(out_dir),
         "-n", "1",
+        # Keep the built image so the runner can record its packages; the runner removes it.
+        "--no-delete",
         "--ak", f"version={arm.harness_version}",
     ]
     if arm.effort:
@@ -54,6 +56,8 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         argv += ["--ak", f"append_system_prompt={text}"]
     if "instruction_append_file" in arm.inject:
         argv += ["--extra-instruction-path", str(root / arm.inject["instruction_append_file"])]
+    for skill in task_skills:
+        argv += ["--skill", str(skill)]
     if "skills_dir" in arm.inject:
         argv += ["--skill", str(root / arm.inject["skills_dir"])]
     if "settings_file" in arm.inject:

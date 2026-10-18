@@ -34,16 +34,20 @@ class Builder:
         if created.returncode != 0:
             raise BuilderError(f"cannot create buildx builder {self.name!r}: {created.stderr}")
 
-    def enforce_cap(self) -> None:
-        """Evict least recently used cache down to the cap. In-use records are never pruned."""
+    def enforce_cap(self) -> str | None:
+        """Evict least recently used cache down to the cap and return Docker's report of what
+        was freed. Records used by builds still running cannot be evicted, so while builds run
+        the cache can exceed the cap by about their size."""
         if self.cache_cap_gb is None:
-            return
+            return None
         out = subprocess.run(
             ["docker", "buildx", "prune", "--builder", self.name, "--force",
              "--max-used-space", f"{int(self.cache_cap_gb * 1024)}mb"],
             capture_output=True, text=True)
         if out.returncode != 0:
             raise BuilderError(f"pruning builder {self.name!r} failed: {out.stderr}")
+        freed = [line for line in out.stdout.splitlines() if line.startswith("Total")]
+        return freed[-1].split(None, 1)[-1].strip() if freed else "0B"
 
     def record(self) -> dict:
         return {"name": self.name, "cache_cap_gb": self.cache_cap_gb}

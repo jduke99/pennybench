@@ -13,8 +13,12 @@ from pathlib import Path
 from typing import Callable
 
 from pennybench.config import LocalConfig
+from pennybench.environment import record_environment, remove_stray_images
 from pennybench.harbor import harbor_bin, run_harbor
 from pennybench.spec import Experiment
+
+# One of the paths SkillsBench reference solutions search for their task's skills.
+ORACLE_SKILLS_PATH = "/skills"
 
 HOST_VARS = ("PATH", "HOME", "USER", "TMPDIR", "LANG")
 
@@ -30,9 +34,15 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
     if config.builder:
         env.update(config.builder.env())
     argv = [harbor_bin(), "run", "-p", str(task_dir), "-a", "oracle", "-o", str(out_dir / "harbor"),
-            "-n", "1"]
+            "-n", "1", "--no-delete"]
+    skills = task_dir / "environment" / "skills"
+    if skills.is_dir():
+        argv += ["--mounts", json.dumps([{"type": "bind", "source": str(skills),
+                                          "target": ORACLE_SKILLS_PATH, "read_only": True}])]
     outcome = run_harbor(argv, env, out_dir / "harbor", out_dir / "harbor.log")
     result = outcome.result or {}
+    environment = record_environment(result.get("trial_name"), out_dir)
+    remove_stray_images(task_dir.name)
     record = {
         "task": task_dir.name,
         "status": outcome.status,
@@ -40,15 +50,19 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
         "exception_type": (result.get("exception_info") or {}).get("exception_type"),
         "exception_message": ((result.get("exception_info") or {}).get("exception_message")
                               or "")[:500],
+        "environment_sha256": environment["sha256"],
+        "environment_error": environment["error"],
     }
     (out_dir / "oracle.json").write_text(json.dumps(record, indent=2) + "\n")
     return record
 
 
 def run_oracle(experiment: Experiment, config: LocalConfig, workers: int = 2,
+               retry_failed: bool = False,
                on_result: Callable[[dict], None] = lambda r: None) -> list[dict]:
     """Every task in the experiment's set, minus its exclusions and ignoring any sample.
-    Tasks with a saved result are not rerun, except where Harbor itself failed."""
+    Tasks with a saved result are not rerun, except where Harbor itself failed, or any
+    failure when `retry_failed` is set."""
     if config.builder:
         config.builder.ensure()
     root = oracle_dir(experiment, config)
@@ -58,22 +72,29 @@ def run_oracle(experiment: Experiment, config: LocalConfig, workers: int = 2,
     for task in tasks:
         saved = root / task.name / "oracle.json"
         record = json.loads(saved.read_text()) if saved.exists() else None
-        if record and record["status"] != "harbor_failed":
+        if record and record["status"] != "harbor_failed" and not (retry_failed and failed(record)):
             results.append(record)
         else:
             pending.append(task)
-    with ThreadPoolExecutor(max_workers=workers) as pool:
+    pool = ThreadPoolExecutor(max_workers=workers)
+    try:
         futures = {}
         for task in pending:
             out = root / task.name
+            if (out / "harbor").exists():
+                (out / "harbor").rename(out / f"harbor.previous-{len(list(out.glob('harbor.previous-*')))}")
             out.mkdir(parents=True, exist_ok=True)
             futures[pool.submit(run_oracle_task, task, out, config)] = task
         for future in as_completed(futures):
             record = future.result()
+            if config.builder:
+                record["cache_pruned"] = config.builder.enforce_cap()
             results.append(record)
             on_result(record)
-            if config.builder:
-                config.builder.enforce_cap()
+    finally:
+        # On Ctrl-C, queued tasks are dropped; tasks already running finish or are killed with
+        # the process.
+        pool.shutdown(wait=False, cancel_futures=True)
     results.sort(key=lambda r: r["task"])
     (root / "summary.json").write_text(json.dumps(results, indent=2) + "\n")
     return results

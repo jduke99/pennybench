@@ -3,6 +3,7 @@ id: smoke-route
 arms: [cc-haiku-native, cc-haiku-proxy]
 variable: route
 tasks: tasks/smoke
+task_skills: without
 exclude: []
 stage: smoke
 k: 1

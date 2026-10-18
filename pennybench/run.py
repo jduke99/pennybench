@@ -18,7 +18,8 @@ from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
 from pennybench.plan import PlannedTrial, plan_trials
 from pennybench.digest import file_sha256
-from pennybench.spec import Arm, Experiment
+from pennybench.environment import record_environment, remove_stray_images
+from pennybench.spec import Arm, Experiment, task_skill_dirs
 
 # Statuses that end a trial for good; anything else is retried on resume.
 FINAL_STATUSES = ("complete", "agent_error")
@@ -115,6 +116,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "harbor_version": harbor_version({"PATH": environ.get("PATH", "")}),
         "variable": experiment.variable,
         "tasks": experiment.tasks_source,
+        "task_skills": experiment.task_skills,
         "sample": experiment.sample,
         "stage": experiment.stage,
         "k": experiment.k,
@@ -161,6 +163,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         trial_dir.rename(trial_dir.with_name(f"{trial.trial_id}.attempt-{int(time.time())}"))
     trial_dir.mkdir(parents=True)
 
+    skills = task_skill_dirs(task_dir) if experiment.task_skills == "with" else []
     trial_env = build_trial_env(arm, config, environ)
     build = ensure_claude_code(arm.harness_version, agent_cache_root(config))
     capture = WireCapture(trial_dir / "wire", experiment_capture_hosts(experiment, config),
@@ -169,7 +172,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     try:
         argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root,
                               {**capture.agent_env(), **RUNNER_AGENT_ENV},
-                              capture.mounts() + build.mounts())
+                              capture.mounts() + build.mounts(), skills)
         started = _now()
         t0 = time.monotonic()
         host_env = {**trial_env.host_env, **(config.builder.env() if config.builder else {})}
@@ -178,8 +181,10 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     finally:
         capture.stop()
 
-    leaks = find_secret_leaks(trial_dir, trial_env.secrets)
     result = outcome.result or {}
+    environment = record_environment(result.get("trial_name"), trial_dir)
+    remove_stray_images(trial.task)
+    leaks = find_secret_leaks(trial_dir, trial_env.secrets)
     record = {
         **trial.to_json(),
         "arm": arm.id,
@@ -194,6 +199,9 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         "exception_type": (result.get("exception_info") or {}).get("exception_type"),
         "agent_version": (result.get("agent_info") or {}).get("version"),
         "task_checksum": result.get("task_checksum"),
+        "task_skills": [p.name for p in skills],
+        "environment_sha256": environment["sha256"],
+        "environment_error": environment["error"],
         "secret_leaks": leaks,
         "artifacts": tree_sha256(trial_dir),
     }

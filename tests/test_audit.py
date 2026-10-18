@@ -70,6 +70,9 @@ def make_run(tmp_path: Path, trials: list[dict], *, treatment_marker=None,
         (d / "trial.json").write_text(json.dumps({
             "trial_id": t["trial_id"], "role": t["role"], "task": t["task"], "rep": 0,
             "status": t.get("status", "complete"), "agent_version": t.get("version", "2.1.302"),
+            "task_skills": t.get("skills", []),
+            "environment_sha256": t.get("env", "env-a"),
+            "environment_error": None if t.get("env", "env-a") else "image was not built",
         }))
         lines = [json.dumps(r) for r in t.get("wire", [])]
         (d / "wire" / "wire.jsonl").write_text("\n".join(lines) + "\n" if lines else "")
@@ -138,3 +141,20 @@ def test_unfinished_pair_fails_complete_and_pairing(tmp_path):
 def test_agent_error_pairs_are_final_but_not_capture_failures(tmp_path, status):
     run = make_run(tmp_path, pair(treatment__status=status, treatment__wire=[]))
     assert failed(audit_run(run)) == {}
+
+
+def test_task_skill_missing_from_requests_fails(tmp_path):
+    run = make_run(tmp_path, pair(base_text="skills: pptx", treat_text="skills: pptx",
+                                  baseline__skills=["pptx", "xlsx"], treatment__skills=["pptx"]))
+    assert failed(audit_run(run))["task_skills"] == [
+        "0-t1-baseline: skills never seen by the model: ['xlsx']"]
+
+
+def test_arms_on_different_package_lists_fail(tmp_path):
+    run = make_run(tmp_path, pair(treatment__env="env-b"))
+    assert failed(audit_run(run))["environment"] == ["t1 r0: arms ran on different package lists"]
+
+
+def test_completed_trial_without_package_list_fails(tmp_path):
+    run = make_run(tmp_path, pair(treatment__env=None))
+    assert "package list not recorded" in failed(audit_run(run))["environment"][0]

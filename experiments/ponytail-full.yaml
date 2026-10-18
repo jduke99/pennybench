@@ -5,6 +5,7 @@ variable: inject
 tasks:
   dataset: benchflow/skillsbench@v1.1
   sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+task_skills: with
 exclude:
   - task: bike-rebalance
     reason: >-

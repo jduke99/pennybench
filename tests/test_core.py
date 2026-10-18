@@ -39,7 +39,7 @@ def write_experiment(root: Path, arms: list[str], variable: str, **overrides) ->
     path = root / "experiments" / "exp.yaml"
     path.parent.mkdir(parents=True, exist_ok=True)
     raw = {"id": "exp", "arms": arms, "variable": variable, "tasks": "tasks",
-           "stage": "smoke", "k": 1, "seed": 7, **overrides}
+           "stage": "smoke", "k": 1, "seed": 7, "task_skills": "without", **overrides}
     path.write_text(yaml.safe_dump(raw))
     return path
 
@@ -271,3 +271,51 @@ def test_oracle_failure_rule():
     assert failed({"status": "complete", "reward": 0.5})
     assert failed({"status": "complete", "reward": None})
     assert failed({"status": "agent_error", "reward": 1.0})
+
+
+# Task skills
+
+def test_task_skills_setting_is_required_and_validated(tmp_path):
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    write_tasks(tmp_path, ["t1"])
+    with pytest.raises(SpecError, match="task_skills"):
+        load_experiment(write_experiment(tmp_path, ["a", "b"], "route", task_skills="maybe"),
+                        tmp_path)
+
+
+def test_task_skill_dirs_takes_only_folders_with_skill_md(tmp_path):
+    from pennybench.spec import task_skill_dirs
+    skills = tmp_path / "environment" / "skills"
+    (skills / "real").mkdir(parents=True)
+    (skills / "real" / "SKILL.md").write_text("x")
+    (skills / "licenses").mkdir()
+    (skills / "README.md").write_text("x")
+    assert [p.name for p in task_skill_dirs(tmp_path)] == ["real"]
+    assert task_skill_dirs(tmp_path / "nowhere") == []
+
+
+def test_harbor_command_registers_each_task_skill(tmp_path, config):
+    from pennybench.harbor import harbor_command
+    arm = load_arm(write_arm(tmp_path, "a"))
+    env = build_trial_env(arm, config, ENVIRON)
+    argv = harbor_command(arm, tmp_path, tmp_path / "out", env, tmp_path, {}, [],
+                          [tmp_path / "s1", tmp_path / "s2"])
+    assert [argv[i + 1] for i, a in enumerate(argv) if a == "--skill"] == [
+        str(tmp_path / "s1"), str(tmp_path / "s2")]
+
+
+# Environment manifests
+
+def test_manifest_is_sorted_by_section(monkeypatch):
+    import subprocess
+    from pennybench import environment
+    stdout = "# python\nzeta==1\nalpha==2\n# dpkg\nlibc=2.39\n# apk\n# npm-global\n"
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0, stdout, ""))
+    assert environment.read_manifest("img") == (
+        "# python\nalpha==2\nzeta==1\n# dpkg\nlibc=2.39\n# apk\n# npm-global\n")
+
+
+def test_trial_image_name_matches_harbor():
+    from pennybench.environment import trial_image
+    assert trial_image("fizzbuzz__wEcUKDW") == "fizzbuzz__wecukdw__env-main:latest"
