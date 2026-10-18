@@ -14,7 +14,8 @@ from pennybench.builder import Builder
 
 LOCAL_CONFIG_NAME = "pennybench.local.toml"
 
-AUTH_KINDS = ("oauth", "api_key")
+# claude_login: the runner's own claude.ai sign-in, as a signed-in user runs Claude Code.
+AUTH_KINDS = ("oauth", "api_key", "claude_login")
 
 
 class ConfigError(ValueError):
@@ -33,7 +34,9 @@ class Endpoint:
 class AuthProfile:
     name: str
     kind: str
-    token_env: str
+    token_env: str | None = None
+    # claude_login: the login must stay valid at least this long when a trial starts.
+    min_valid_minutes: float = 30.0
 
 
 @dataclass(frozen=True)
@@ -79,9 +82,10 @@ def load_local_config(path: Path) -> LocalConfig:
         kind = spec.get("kind")
         if kind not in AUTH_KINDS:
             raise ConfigError(f"auth profile {name!r} needs kind = one of {AUTH_KINDS}")
-        if "token_env" not in spec:
+        if kind != "claude_login" and "token_env" not in spec:
             raise ConfigError(f"auth profile {name!r} needs token_env")
-        auth[name] = AuthProfile(name=name, kind=kind, token_env=spec["token_env"])
+        auth[name] = AuthProfile(name=name, kind=kind, token_env=spec.get("token_env"),
+                                 min_valid_minutes=float(spec.get("min_valid_minutes", 30)))
 
     builder = None
     docker = raw.get("docker", {})

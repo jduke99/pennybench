@@ -14,6 +14,8 @@ from typing import Callable, Mapping
 from pennybench.agent_cache import ensure_claude_code
 from pennybench.agent_env import build_trial_env
 from pennybench.capture import WireCapture, capture_hosts
+from pennybench.claude_login import StagedLogin, ensure_login, remove_copies
+from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
 from pennybench.plan import PlannedTrial, plan_trials
@@ -85,6 +87,15 @@ def agent_cache_root(config: LocalConfig) -> Path:
 RUNNER_AGENT_ENV = {"DISABLE_AUTOUPDATER": "1"}
 
 
+def cache_nonce(run_dir: Path, trial: PlannedTrial) -> str:
+    """Stable for a run and trial, so a resumed trial sends the same text again."""
+    return hashlib.sha256(f"{run_dir.name}/{trial.trial_id}".encode()).hexdigest()[:16]
+
+
+def cache_isolation_line(nonce: str) -> str:
+    return f"(Benchmark trial reference {nonce}; no action needed.)"
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -100,6 +111,9 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
     builds = {}
     for arm in (experiment.baseline, experiment.treatment):
         build_trial_env(arm, config, environ)
+        profile = config.auth_profile(arm.auth)
+        if profile.kind == "claude_login":
+            ensure_login(profile.min_valid_minutes)
         builds[arm.harness_version] = ensure_claude_code(
             arm.harness_version, agent_cache_root(config)).record()
 
@@ -117,6 +131,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "variable": experiment.variable,
         "tasks": experiment.tasks_source,
         "task_skills": experiment.task_skills,
+        "cache_isolation": experiment.cache_isolation,
         "sample": experiment.sample,
         "stage": experiment.stage,
         "k": experiment.k,
@@ -164,15 +179,26 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     trial_dir.mkdir(parents=True)
 
     skills = task_skill_dirs(task_dir) if experiment.task_skills == "with" else []
+    nonce = cache_nonce(run_dir, trial) if experiment.cache_isolation == "trial" else None
     trial_env = build_trial_env(arm, config, environ)
+    profile = config.auth_profile(arm.auth)
+    login = ensure_login(profile.min_valid_minutes) if profile.kind == "claude_login" else None
+    secrets = trial_env.secrets + (login.secrets if login else ())
     build = ensure_claude_code(arm.harness_version, agent_cache_root(config))
     capture = WireCapture(trial_dir / "wire", experiment_capture_hosts(experiment, config),
                           config.store / ".mitmproxy")
     capture.start()
+    login_record = None
+    staged = None
     try:
+        # Created inside the try so the copy is always removed, whatever fails after this.
+        staged = StagedLogin(login) if login else None
         argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root,
                               {**capture.agent_env(), **RUNNER_AGENT_ENV},
-                              capture.mounts() + build.mounts(), skills)
+                              capture.mounts() + build.mounts()
+                              + (staged.mounts() if staged else []), skills,
+                              cache_isolation_line(nonce) if nonce else None,
+                              agent=SIGNED_IN_AGENT if login else None)
         started = _now()
         t0 = time.monotonic()
         host_env = {**trial_env.host_env, **(config.builder.env() if config.builder else {})}
@@ -180,11 +206,18 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         wall = time.monotonic() - t0
     finally:
         capture.stop()
-
+        if login:
+            try:
+                login_record = staged.close(trial_dir) if staged else {}
+            finally:
+                # Harbor copies Claude Code's config directory back with the logs, login
+                # included; those copies go even if syncing a refresh back failed.
+                removed = remove_copies(trial_dir)
+            login_record["removed_copies"] = removed
     result = outcome.result or {}
     environment = record_environment(result.get("trial_name"), trial_dir)
     remove_stray_images(trial.task)
-    leaks = find_secret_leaks(trial_dir, trial_env.secrets)
+    leaks = find_secret_leaks(trial_dir, secrets)
     record = {
         **trial.to_json(),
         "arm": arm.id,
@@ -200,6 +233,8 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         "agent_version": (result.get("agent_info") or {}).get("version"),
         "task_checksum": result.get("task_checksum"),
         "task_skills": [p.name for p in skills],
+        "cache_nonce": nonce,
+        "login": login_record,
         "environment_sha256": environment["sha256"],
         "environment_error": environment["error"],
         "secret_leaks": leaks,

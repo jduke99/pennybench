@@ -1,0 +1,8 @@
+# Claude Code signed in to claude.ai (a copy of the runner's own login), routed through the local config's `proxy` endpoint.
+id: cc-sonnet-proxy-login
+harness: claude-code
+harness_version: "2.1.302"
+model: claude-sonnet-5-5
+effort: medium
+auth: claude-login
+route: endpoint:proxy

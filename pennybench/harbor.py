@@ -30,7 +30,9 @@ def harbor_version(env: dict[str, str]) -> str:
 
 def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
                    root: Path, runner_env: dict[str, str],
-                   mounts: list[dict], task_skills: list[Path] = ()) -> list[str]:
+                   mounts: list[dict], task_skills: list[Path] = (),
+                   instruction_suffix: str | None = None,
+                   agent: str | None = None) -> list[str]:
     """`runner_env` is what PennyBench itself sets in every trial (capture proxy, updater
     off); an arm may not override it."""
     clash = set(runner_env) & set(trial_env.agent_env)
@@ -39,7 +41,8 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
     argv = [
         harbor_bin(), "run",
         "-p", str(task_dir),
-        "-a", arm.harness,
+        # A Harbor agent import path replaces the stock adapter for the same harness.
+        "-a", agent or arm.harness,
         # Bare id: Harbor keeps a provider prefix only when a base URL is set, which would make
         # the two routes send different model strings.
         "-m", arm.model,
@@ -60,6 +63,9 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         argv += ["--skill", str(skill)]
     if "skills_dir" in arm.inject:
         argv += ["--skill", str(root / arm.inject["skills_dir"])]
+    if instruction_suffix:
+        # Appended after any --extra-instruction-path files.
+        argv += ["--extra-instruction", instruction_suffix]
     if "settings_file" in arm.inject:
         argv += ["--ak", f"config={root / arm.inject['settings_file']}"]
     for key, value in sorted({**trial_env.agent_env, **runner_env}.items()):

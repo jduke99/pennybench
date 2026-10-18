@@ -6,6 +6,7 @@ tasks:
   dataset: benchflow/skillsbench@v1.1
   sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
 task_skills: with
+cache_isolation: trial
 exclude:
   # Oracle pass 2026-10-18 (runs/oracle/benchflow__skillsbench@v1.1): each task below fails
   # its own reference solution on this machine, so it cannot measure an agent.

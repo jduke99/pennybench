@@ -56,7 +56,22 @@ Requirements: macOS or Linux, Docker running, [uv](https://docs.astral.sh/uv/), 
      each pair (and after each oracle task). The cap is soft: layers of builds still running
      cannot be evicted, so with several large builds in flight the cache can briefly exceed it.
 
-3. **Secrets.** Put them in `.env` (gitignored), never in tracked files:
+3. **Sign in.** Arms with `auth: claude-login` run Claude Code signed in to your claude.ai
+   account, as `penny claude` or a native session does. Run `claude auth login` once; PennyBench
+   offers to start it when no login is found, and refuses a trial when the login has less than
+   `min_valid_minutes` left (run `claude auth status` to refresh it).
+
+   How the login is used: only the `claudeAiOauth` entry is read (from the macOS Keychain or
+   `~/.claude/.credentials.json`; other stored sign-ins are never touched). Each trial gets a
+   private copy, mounted read-only and installed into Claude Code's config directory by
+   PennyBench's Harbor agent. After the trial every copy is deleted, including the one Harbor
+   brings back with the logs, before the secret scan; if Claude Code refreshed the login during
+   the trial, the new tokens are written back to your store so your own Claude Code stays
+   signed in. The login is exposed to the task container for the trial's duration, so consider
+   a dedicated account for untrusted task sets.
+
+4. **Secrets.** Token-based profiles put their secrets in `.env` (gitignored), never in
+   tracked files:
 
    ```sh
    CLAUDE_CODE_OAUTH_TOKEN=...   # from `claude setup-token`, for kind = "oauth"
@@ -156,6 +171,7 @@ the commit, or the trial plan has changed.
 | adoption | the treatment marker is missing from a treatment trial, or present in a baseline trial |
 | task_skills | with `task_skills: with`, an installed task skill never appears in the trial's requests |
 | environment | a completed trial has no package list, or the two arms of a pair ran on different ones |
+| cache_isolation | with `cache_isolation: trial`, a trial's own reference line never reached the model |
 | isolation | your home-directory path appears in a request (host config leaked in) |
 | pairing | a pair has only one arm, or an excluded task ran |
 
@@ -207,6 +223,7 @@ tasks:                                      # a repo path, or a pinned registry 
   dataset: benchflow/skillsbench@v1.1
   sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
 task_skills: with                           # install each task's own skills in both arms
+cache_isolation: trial                      # no trial reads cache left by an identical earlier request
 sample: 10                                  # optional seeded subset, after exclusions
 exclude:
   - task: bike-rebalance
@@ -247,8 +264,10 @@ key_env = "PENNY_API_KEY"                       # the proxy's own key, if it nee
 env = { ENABLE_TOOL_SEARCH = "true" }           # extra agent env the proxy needs
 ```
 
-An arm with `route: endpoint:proxy` then sends the subscription token as the bearer and the
-proxy key as `x-api-key`. To point the same arms at a hosted proxy, change `base_url` only.
+With `auth: claude-login`, an arm with `route: endpoint:proxy` runs signed in exactly like a
+`penny claude` launch: the base URL plus empty token variables, and the proxy recognizes the
+linked account from the login. With a token profile it sends the token as the bearer and the
+proxy key as `x-api-key`, which a proxy treats as a signed-out client. To point the same arms at a hosted proxy, change `base_url` only.
 Start and stop the proxy yourself; PennyBench never does.
 
 ## Where things are saved
@@ -280,5 +299,7 @@ check every number.
   workspace diff, so a line rewritten twice counts twice. Subagent calls go through the same
   capture, so their writes count; files a script writes at runtime are not seen, in either
   arm.
+- **Headless.** Harbor runs Claude Code as `claude --print`, so trials lack interactive-only
+  tools (for example AskUserQuestion, Artifact) that an interactive session has.
 - **Harnesses.** Claude Code only. The Codex harness is planned.
 - **Report format.** Text and JSON only; an HTML report is planned.

@@ -11,7 +11,14 @@ key_env = "PROXY_API_KEY"          # env var holding the proxy's own key, never 
 env = { }                          # extra agent env the proxy needs, e.g. feature switches
 
 # Auth profiles. An arm selects one with `auth = "<name>"`.
+# kind = "claude_login" uses your own claude.ai sign-in, the way a signed-in user runs Claude
+#   Code (needed for a faithful proxy comparison). Sign in first with `claude auth login`.
 # kind = "oauth" for a subscription token (`claude setup-token`), "api_key" for an API key.
+#   Claude Code given only a token behaves like a signed-out client.
+[auth.claude-login]
+kind = "claude_login"
+min_valid_minutes = 30
+
 [auth.claude-subscription]
 kind = "oauth"
 token_env = "CLAUDE_CODE_OAUTH_TOKEN"

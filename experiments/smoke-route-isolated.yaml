@@ -1,0 +1,15 @@
+# Routing smoke: proves both arms authenticate, route, and seal before any paid experiment.
+id: smoke-route-isolated
+arms: [cc-haiku-native, cc-haiku-proxy]
+variable: route
+tasks: tasks/smoke
+task_skills: without
+cache_isolation: trial
+exclude: []
+stage: smoke
+k: 1
+seed: 20261018
+endpoints:
+  primary: [cost]
+  secondary: [reward, turns, wall_clock]
+quality: { test: sign, non_inferiority_margin: null }

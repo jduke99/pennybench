@@ -1,0 +1,13 @@
+# Spot check: signed-in Claude Code, native vs proxy, on the trivial smoke task. Not a measurement.
+id: smoke-login
+arms: [cc-sonnet-native-login, cc-sonnet-proxy-login]
+variable: route
+tasks: tasks/smoke
+task_skills: without
+cache_isolation: trial
+exclude: []
+stage: audit
+k: 1
+seed: 20261018
+endpoints:
+  primary: [cost]

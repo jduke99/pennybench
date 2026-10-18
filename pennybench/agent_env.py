@@ -45,6 +45,8 @@ def _secret(environ: Mapping[str, str], name: str, purpose: str) -> str:
 
 def build_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) -> TrialEnv:
     profile = config.auth_profile(arm.auth)
+    if profile.kind == "claude_login":
+        return _login_trial_env(arm, config, environ)
     upstream = _secret(environ, profile.token_env, f"auth profile {profile.name!r}")
     secret_vars = {UPSTREAM_SECRET: upstream}
     upstream_ref = f"${{{UPSTREAM_SECRET}}}"
@@ -80,3 +82,21 @@ def build_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) -
     host_env = {k: environ[k] for k in HOST_PASSTHROUGH if environ.get(k)}
     host_env.update(secret_vars)
     return TrialEnv(agent_env=agent_env, host_env=host_env, secrets=tuple(secret_vars.values()))
+
+
+def _login_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) -> TrialEnv:
+    """Claude Code authenticates with the staged claude.ai login (see claude_login), so no
+    credential travels in the environment. A proxy route mirrors a signed-in proxy launch:
+    the base URL plus empty token variables, so nothing inherited can replace the login; the
+    proxy recognizes the linked account from the login itself."""
+    agent_env: dict[str, str] = {}
+    if arm.endpoint_name is not None:
+        endpoint = config.endpoint(arm.endpoint_name)
+        agent_env.update({"ANTHROPIC_BASE_URL": endpoint.base_url,
+                          "ANTHROPIC_AUTH_TOKEN": "", "ANTHROPIC_API_KEY": ""})
+        clash = RESERVED_AGENT_VARS & set(endpoint.env)
+        if clash:
+            raise ConfigError(f"endpoint {endpoint.name!r} env may not set {sorted(clash)}")
+        agent_env.update(endpoint.env)
+    host_env = {k: environ[k] for k in HOST_PASSTHROUGH if environ.get(k)}
+    return TrialEnv(agent_env=agent_env, host_env=host_env, secrets=())

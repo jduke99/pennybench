@@ -319,3 +319,35 @@ def test_manifest_is_sorted_by_section(monkeypatch):
 def test_trial_image_name_matches_harbor():
     from pennybench.environment import trial_image
     assert trial_image("fizzbuzz__wEcUKDW") == "fizzbuzz__wecukdw__env-main:latest"
+
+
+# Cache isolation
+
+def test_cache_nonce_is_stable_per_trial_and_unique_across_trials(tmp_path):
+    from pennybench.plan import PlannedTrial
+    from pennybench.run import cache_nonce
+    a = PlannedTrial(pair=0, position=0, task="t1", rep=0, role="baseline")
+    b = PlannedTrial(pair=0, position=1, task="t1", rep=0, role="treatment")
+    c = PlannedTrial(pair=1, position=0, task="t1", rep=1, role="baseline")
+    run1, run2 = tmp_path / "run1", tmp_path / "run2"
+    assert cache_nonce(run1, a) == cache_nonce(run1, a)
+    assert len({cache_nonce(run1, a), cache_nonce(run1, b), cache_nonce(run1, c),
+                cache_nonce(run2, a)}) == 4
+
+
+def test_cache_isolation_is_validated_and_defaults_to_none(tmp_path):
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    write_tasks(tmp_path, ["t1"])
+    assert load_experiment(write_experiment(tmp_path, ["a", "b"], "route"), tmp_path).cache_isolation == "none"
+    with pytest.raises(SpecError, match="cache_isolation"):
+        load_experiment(write_experiment(tmp_path, ["a", "b"], "route", cache_isolation="run"), tmp_path)
+
+
+def test_harbor_command_appends_the_isolation_line(tmp_path, config):
+    from pennybench.harbor import harbor_command
+    arm = load_arm(write_arm(tmp_path, "a"))
+    env = build_trial_env(arm, config, ENVIRON)
+    argv = harbor_command(arm, tmp_path, tmp_path / "out", env, tmp_path, {}, [], [], "ref abc")
+    assert argv[argv.index("--extra-instruction") + 1] == "ref abc"
+    assert "--extra-instruction" not in harbor_command(arm, tmp_path, tmp_path / "out", env, tmp_path, {}, [])

@@ -39,6 +39,7 @@ class TrialEvidence:
     marker_hits: int
     home_hits: int
     missing_skills: list[str]
+    nonce_missing: bool
     environment_sha256: str | None
     environment_error: str | None
     decode_errors: int
@@ -68,6 +69,8 @@ def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEviden
         marker_hits=sum(1 for c in calls if any(m in c.request_text for m in markers)),
         home_hits=sum(1 for c in calls if home and home in c.request_text),
         # Claude Code lists installed skills by name in its requests.
+        nonce_missing=bool(record.get("cache_nonce")) and bool(calls) and not any(
+            record["cache_nonce"] in c.request_text for c in calls),
         environment_sha256=record.get("environment_sha256"),
         environment_error=record.get("environment_error"),
         missing_skills=[name for name in record.get("task_skills") or []
@@ -156,6 +159,13 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
          for e in final if e.missing_skills],
         f"task skills {manifest.get('task_skills', 'without')}: every installed task skill "
         "appears in the trial's requests"))
+
+    checks.append(_check(
+        "cache_isolation",
+        [f"{e.trial_id}: its cache isolation line never reached the model"
+         for e in final if e.nonce_missing],
+        f"cache isolation {manifest.get('cache_isolation', 'none')}: every trial's own "
+        "reference line appears in its requests"))
 
     env_fail = [f"{e.trial_id}: package list not recorded ({e.environment_error})"
                 for e in final if e.status == "complete" and not e.environment_sha256]

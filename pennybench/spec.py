@@ -17,6 +17,9 @@ HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 STAGES = ("audit", "smoke", "smoke-k3", "full")
 TASK_SKILLS = ("with", "without")
+# trial: append a line unique to the run and trial to every task instruction, so no trial can
+# read prompt cache left by an identical request in an earlier run or another rep.
+CACHE_ISOLATION = ("none", "trial")
 # append_system_prompt_file: text appended to Claude Code's system prompt.
 # instruction_append_file: text appended after the task instruction, separated by a blank line.
 # settings_file: a Claude Code settings JSON layer.
@@ -74,6 +77,7 @@ class Experiment:
     tasks: Path
     tasks_source: dict[str, str]
     task_skills: str
+    cache_isolation: str
     sample: int | None
     exclude: tuple[Exclusion, ...]
     stage: str
@@ -222,6 +226,9 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
     task_skills = _require(raw, "task_skills", path)
     if task_skills not in TASK_SKILLS:
         raise SpecError(f"{path}: task_skills must be one of {TASK_SKILLS}")
+    cache_isolation = raw.get("cache_isolation", "none")
+    if cache_isolation not in CACHE_ISOLATION:
+        raise SpecError(f"{path}: cache_isolation must be one of {CACHE_ISOLATION}")
     sample = raw.get("sample")
     if sample is not None and int(sample) < 1:
         raise SpecError(f"{path}: sample must be a positive number of tasks")
@@ -247,6 +254,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         tasks=tasks,
         tasks_source=tasks_source,
         task_skills=task_skills,
+        cache_isolation=cache_isolation,
         sample=sample,
         exclude=tuple(exclude),
         stage=stage,
