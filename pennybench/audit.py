@@ -167,6 +167,19 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
         f"cache isolation {manifest.get('cache_isolation', 'none')}: every trial's own "
         "reference line appears in its requests"))
 
+    if manifest.get("egress_capture"):
+        from pennybench.metrics import egress_calls_for, run_egress
+        egress = run_egress(run_dir) or []
+        egress_fail = []
+        for e in final:
+            if e.status != "complete" or not arms[e.role].get("endpoint"):
+                continue
+            record = json.loads((run_dir / "trials" / e.trial_id / "trial.json").read_text())
+            if len(egress_calls_for(record.get("cache_nonce"), egress)) < e.n_model_calls:
+                egress_fail.append(f"{e.trial_id}: proxy upstream capture is missing its calls")
+        checks.append(_check("egress", egress_fail,
+                             "every proxy trial's calls appear in the proxy's upstream capture"))
+
     env_fail = [f"{e.trial_id}: package list not recorded ({e.environment_error})"
                 for e in final if e.status == "complete" and not e.environment_sha256]
     for (task, rep), roles in by_pair_env(final).items():

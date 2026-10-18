@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 from pennybench.audit import write_audit
-from pennybench.metrics import METRICS, run_metrics
+from pennybench.metrics import METRICS, run_metrics, unattributed_egress
 from pennybench.stats import compute_stats
 
 
@@ -19,6 +19,7 @@ def build_report(run_dir: Path, partial: bool = False) -> dict:
     trials = run_metrics(run_dir)
     (run_dir / "metrics.json").write_text(json.dumps(trials, indent=2) + "\n")
     stats = compute_stats(manifest, trials, audit_passed, partial)
+    stats["unattributed_egress"] = unattributed_egress(run_dir)
     (run_dir / "stats.json").write_text(json.dumps(stats, indent=2) + "\n")
     report["stats"] = stats
     return report
@@ -58,6 +59,10 @@ def format_report(report: dict) -> str:
             f"{_fmt_pct(s['hodges_lehmann_pct']):>9}{_fmt_p(s['wilcoxon_p']):>8}"
             f"{s['treatment_lower']:>7}/{s['treatment_higher']}/{s['equal']:<6}"
             f"{_fmt_pct(s['total_pct']):>9}")
+    loose = stats.get("unattributed_egress")
+    if loose is not None:
+        lines.append(f"proxy upstream calls not tied to any trial: {loose['calls']} "
+                     f"(${loose['cost']:.4f}; {', '.join(loose['models']) or 'none'})")
     r = stats["endpoints"]["reward"]
     lines.append("")
     lines.append(

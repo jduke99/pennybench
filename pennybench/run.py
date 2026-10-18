@@ -13,7 +13,7 @@ from typing import Callable, Mapping
 
 from pennybench.agent_cache import ensure_claude_code
 from pennybench.agent_env import build_trial_env
-from pennybench.capture import WireCapture, capture_hosts
+from pennybench.capture import ANTHROPIC_HOST, WireCapture, capture_hosts
 from pennybench.claude_login import StagedLogin, ensure_login, remove_copies
 from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
@@ -146,6 +146,8 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "agent_builds": builds,
         "task_image_builder": config.builder.record() if config.builder else None,
         "capture_hosts": experiment_capture_hosts(experiment, config),
+        "egress_capture": ({"endpoint": e.name, "port": e.egress_capture_port}
+                           if (e := egress_endpoint(experiment, config)) else None),
         # The isolation audit looks for this path in request bytes: a hit means host files or
         # config reached the model.
         "host_home": environ.get("HOME", ""),
@@ -255,6 +257,29 @@ def completed_trials(run_dir: Path) -> set[str]:
     return done
 
 
+def egress_endpoint(experiment: Experiment, config: LocalConfig):
+    """The proxy endpoint whose own upstream calls are captured, if one is configured."""
+    for arm in (experiment.baseline, experiment.treatment):
+        if arm.endpoint_name and config.endpoint(arm.endpoint_name).egress_capture_port:
+            return config.endpoint(arm.endpoint_name)
+    return None
+
+
+def start_egress_capture(run_dir: Path, experiment: Experiment,
+                         config: LocalConfig) -> WireCapture | None:
+    """Capture the proxy's upstream traffic for the whole run. Its calls are matched to trials
+    by each trial's cache isolation line, so egress capture requires cache_isolation: trial."""
+    endpoint = egress_endpoint(experiment, config)
+    if endpoint is None:
+        return None
+    if experiment.cache_isolation != "trial":
+        raise RunError("egress capture needs cache_isolation: trial to attribute calls to trials")
+    capture = WireCapture(run_dir / "egress", [ANTHROPIC_HOST], config.store / ".mitmproxy",
+                          port=endpoint.egress_capture_port)
+    capture.start()
+    return capture
+
+
 def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
             environ: Mapping[str, str], limit: int | None = None,
             on_trial: Callable[[PlannedTrial, dict | None], None] = lambda t, r: None) -> None:
@@ -266,9 +291,14 @@ def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
         pending = [t for t in pending if t.pair in pairs]
     if config.builder:
         config.builder.ensure()
-    for trial in pending:
-        on_trial(trial, None)
-        on_trial(trial, run_trial(trial, experiment, config, environ, run_dir))
-        # Both trials of a pair share the task image, so the cache is trimmed between pairs.
-        if config.builder and trial.position == 1:
-            config.builder.enforce_cap()
+    egress = start_egress_capture(run_dir, experiment, config)
+    try:
+        for trial in pending:
+            on_trial(trial, None)
+            on_trial(trial, run_trial(trial, experiment, config, environ, run_dir))
+            # Both trials of a pair share the task image, so the cache is trimmed between pairs.
+            if config.builder and trial.position == 1:
+                config.builder.enforce_cap()
+    finally:
+        if egress:
+            egress.stop()

@@ -17,6 +17,7 @@ RATES_PATH = Path(__file__).with_name("rates.json")
 METRICS = (
     "reward", "cost", "total_tokens", "output_tokens", "fresh_input_tokens",
     "cache_read_tokens", "cache_write_tokens", "loc_written", "turns", "wall_clock",
+    "gateway_overhead_cost", "cost_all_in",
 )
 
 COMMENT_PREFIXES = ("#", "//", "/*", "*", "--", "<!--")
@@ -106,7 +107,14 @@ def _seconds(span: dict | None) -> float | None:
     return (end - start).total_seconds()
 
 
-def trial_metrics(trial_dir: Path) -> dict:
+def egress_calls_for(nonce: str | None, egress: list[ModelCall]) -> list[ModelCall]:
+    return [c for c in egress if nonce and nonce in c.request_text]
+
+
+def trial_metrics(trial_dir: Path, egress: list[ModelCall] | None = None) -> dict:
+    """`egress`: the run's proxy-upstream calls, when captured. A trial's share is the calls
+    carrying its isolation line; what they cost beyond the calls the agent itself made is the
+    proxy's overhead (keepalive pings, retries)."""
     record = json.loads((trial_dir / "trial.json").read_text())
     calls = model_calls(read_capture(trial_dir / "wire" / "wire.jsonl"))
     totals = usage_totals(calls)
@@ -125,7 +133,14 @@ def trial_metrics(trial_dir: Path) -> dict:
         "turns": len(calls),
         # Agent execution only: container build and agent install are not the agent's work.
         "wall_clock": _seconds(harbor.get("agent_execution")),
+        "gateway_overhead_cost": None,
+        "cost_all_in": None,
     }
+    if egress is not None:
+        upstream = egress_calls_for(record.get("cache_nonce"), egress)
+        overhead = sum(call_cost(c) for c in upstream) - values["cost"] if upstream else 0.0
+        values["gateway_overhead_cost"] = overhead
+        values["cost_all_in"] = values["cost"] + overhead
     return {
         "trial_id": record["trial_id"],
         "task": record["task"],
@@ -137,5 +152,25 @@ def trial_metrics(trial_dir: Path) -> dict:
     }
 
 
+def run_egress(run_dir: Path) -> list[ModelCall] | None:
+    path = run_dir / "egress" / "wire.jsonl"
+    return model_calls(read_capture(path)) if path.parent.exists() else None
+
+
 def run_metrics(run_dir: Path) -> list[dict]:
-    return [trial_metrics(p.parent) for p in sorted((run_dir / "trials").glob("*/trial.json"))]
+    egress = run_egress(run_dir)
+    return [trial_metrics(p.parent, egress)
+            for p in sorted((run_dir / "trials").glob("*/trial.json"))]
+
+
+def unattributed_egress(run_dir: Path) -> dict | None:
+    """Proxy upstream calls that carry no trial's isolation line (e.g. compaction), which the
+    report shows as a run-level cost rather than charging to any trial."""
+    egress = run_egress(run_dir)
+    if egress is None:
+        return None
+    nonces = [json.loads(p.read_text()).get("cache_nonce")
+              for p in (run_dir / "trials").glob("*/trial.json")]
+    loose = [c for c in egress if not any(n and n in c.request_text for n in nonces)]
+    return {"calls": len(loose), "cost": sum(call_cost(c) for c in loose),
+            "models": sorted({(c.responded_model or c.requested_model or "?") for c in loose})}

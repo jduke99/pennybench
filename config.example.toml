@@ -9,6 +9,7 @@ store = "runs"
 base_url = "http://host.docker.internal:8400"
 key_env = "PROXY_API_KEY"          # env var holding the proxy's own key, never the key itself
 env = { }                          # extra agent env the proxy needs, e.g. feature switches
+# egress_capture_port = 18999      # count the proxy's own upstream calls (see README)
 
 # Auth profiles. An arm selects one with `auth = "<name>"`.
 # kind = "claude_login" uses your own claude.ai sign-in, the way a signed-in user runs Claude

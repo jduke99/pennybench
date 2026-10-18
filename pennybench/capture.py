@@ -46,11 +46,11 @@ def _free_port() -> int:
 
 
 class WireCapture:
-    def __init__(self, directory: Path, hosts: list[str], confdir: Path):
+    def __init__(self, directory: Path, hosts: list[str], confdir: Path, port: int | None = None):
         self.directory = directory
         self.hosts = hosts
         self.confdir = confdir
-        self.port = _free_port()
+        self.port = port or _free_port()
         self.capture_file = directory / "wire.jsonl"
         self.log = directory / "mitmdump.log"
         self.process: subprocess.Popen | None = None

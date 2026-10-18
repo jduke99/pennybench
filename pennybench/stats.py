@@ -45,7 +45,7 @@ def paired_tasks(trials: list[dict]) -> tuple[dict[str, dict[str, dict]], list[d
         tasks[task] = {}
         for role, reps in arms.items():
             tasks[task][role] = {
-                m: median(vals) if (vals := [r[m] for r in reps if r[m] is not None]) else None
+                m: median(vals) if (vals := [r.get(m) for r in reps if r.get(m) is not None]) else None
                 for m in METRICS
             }
     return tasks, dropped

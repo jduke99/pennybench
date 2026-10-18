@@ -28,6 +28,9 @@ class Endpoint:
     base_url: str
     key_env: str | None = None
     env: dict[str, str] = field(default_factory=dict)
+    # A proxy started with HTTPS_PROXY=http://127.0.0.1:<port> sends its own upstream calls
+    # through PennyBench's capture on this port during runs (see run.EgressCapture).
+    egress_capture_port: int | None = None
 
 
 @dataclass(frozen=True)
@@ -75,6 +78,7 @@ def load_local_config(path: Path) -> LocalConfig:
             base_url=spec["base_url"],
             key_env=spec.get("key_env"),
             env={k: str(v) for k, v in spec.get("env", {}).items()},
+            egress_capture_port=int(spec["egress_capture_port"]) if spec.get("egress_capture_port") else None,
         )
 
     auth = {}
