@@ -1,0 +1,159 @@
+"""The audit gate: checks that read only a run's sealed artifacts.
+
+Every check states what it looked at and what it found. Stats refuse to run on a run whose
+audit has any failure.
+"""
+
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, dataclass, field
+from pathlib import Path
+from urllib.parse import urlparse
+
+from pennybench.capture import ANTHROPIC_HOST
+from pennybench.wire import model_calls, read_capture
+
+FINAL_STATUSES = ("complete", "agent_error")
+
+
+@dataclass
+class Check:
+    name: str
+    passed: bool
+    detail: str
+    failures: list[str] = field(default_factory=list)
+
+
+@dataclass
+class TrialEvidence:
+    trial_id: str
+    role: str
+    task: str
+    rep: int
+    status: str
+    agent_version: str | None
+    hosts: set[str]
+    requested_models: set[str]
+    n_model_calls: int
+    marker_hits: int
+    home_hits: int
+    decode_errors: int
+
+
+def _expected_host(arm: dict) -> str:
+    endpoint = arm.get("endpoint")
+    return urlparse(endpoint["base_url"]).hostname if endpoint else ANTHROPIC_HOST
+
+
+def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEvidence:
+    records = read_capture(trial_dir / "wire" / "wire.jsonl")
+    calls = model_calls(records)
+    markers = [a.get("adoption_marker") for a in manifest["arms"].values() if a.get("adoption_marker")]
+    home = manifest.get("host_home") or ""
+    return TrialEvidence(
+        trial_id=record["trial_id"],
+        role=record["role"],
+        task=record["task"],
+        rep=record["rep"],
+        status=record["status"],
+        agent_version=record.get("agent_version"),
+        hosts={c.host for c in calls},
+        requested_models={c.requested_model for c in calls if c.requested_model},
+        n_model_calls=len(calls),
+        marker_hits=sum(1 for c in calls if any(m in c.request_text for m in markers)),
+        home_hits=sum(1 for c in calls if home and home in c.request_text),
+        decode_errors=sum(1 for r in records if r.get("decode_error")),
+    )
+
+
+def load_evidence(run_dir: Path) -> tuple[dict, list[TrialEvidence]]:
+    manifest = json.loads((run_dir / "run.json").read_text())
+    evidence = []
+    for path in sorted((run_dir / "trials").glob("*/trial.json")):
+        record = json.loads(path.read_text())
+        evidence.append(trial_evidence(path.parent, record, manifest))
+    return manifest, evidence
+
+
+def _check(name: str, failures: list[str], detail: str) -> Check:
+    return Check(name=name, passed=not failures, detail=detail, failures=failures)
+
+
+def audit_run(run_dir: Path) -> list[Check]:
+    manifest, evidence = load_evidence(run_dir)
+    arms = manifest["arms"]
+    planned = {t["trial_id"] for t in manifest["plan"]}
+    final = [e for e in evidence if e.status in FINAL_STATUSES]
+    checks = []
+
+    missing = sorted(planned - {e.trial_id for e in final})
+    checks.append(_check("complete", missing,
+                         f"{len(final)} of {len(planned)} planned trials finished"))
+
+    checks.append(_check(
+        "capture",
+        [f"{e.trial_id}: no model calls captured" for e in final
+         if e.status == "complete" and e.n_model_calls == 0]
+        + [f"{e.trial_id}: {e.decode_errors} undecodable bodies" for e in final if e.decode_errors],
+        "every completed trial has decodable model calls on the wire"))
+
+    route_fail = []
+    for e in final:
+        expected = _expected_host(arms[e.role])
+        if e.hosts - {expected}:
+            route_fail.append(f"{e.trial_id}: expected {expected}, saw {sorted(e.hosts)}")
+    checks.append(_check("route", route_fail,
+                         "every model call went to the host its arm declares"))
+
+    pin_fail = []
+    for e in final:
+        arm = arms[e.role]
+        if e.agent_version and e.agent_version != arm["harness_version"]:
+            pin_fail.append(f"{e.trial_id}: agent {e.agent_version} != {arm['harness_version']}")
+        # Claude Code also calls a small model for titles and summaries, so the check is that
+        # the arm's model appears, not that it is the only one.
+        if e.n_model_calls and arm["model"] not in e.requested_models:
+            pin_fail.append(f"{e.trial_id}: {arm['model']} never requested")
+    checks.append(_check("pins", pin_fail, "harness version and model match the arm specs"))
+
+    adoption_fail = []
+    for role in ("baseline", "treatment"):
+        marker = arms[role].get("adoption_marker")
+        if not marker:
+            continue
+        for e in final:
+            if e.role == role and e.n_model_calls and e.marker_hits == 0:
+                adoption_fail.append(f"{e.trial_id}: own marker {marker!r} absent")
+            if e.role != role and e.marker_hits:
+                adoption_fail.append(f"{e.trial_id}: other arm's marker present (contamination)")
+    has_marker = any(a.get("adoption_marker") for a in arms.values())
+    checks.append(_check(
+        "adoption", adoption_fail,
+        "treatment marker in every treatment trial, absent from every baseline"
+        if has_marker else "no adoption marker declared; adoption not checked"))
+
+    checks.append(_check(
+        "isolation",
+        [f"{e.trial_id}: host home path in {e.home_hits} requests" for e in final if e.home_hits],
+        "no host home-directory path appears in any request"))
+
+    excluded = [x["task"] for x in manifest.get("exclude", [])]
+    sym_fail = [f"pair {e.task} r{e.rep}: excluded task was run" for e in final if e.task in excluded]
+    by_pair: dict[tuple, set] = {}
+    for e in final:
+        by_pair.setdefault((e.task, e.rep), set()).add(e.role)
+    sym_fail += [f"{t} r{r}: only {sorted(roles)} finished" for (t, r), roles in by_pair.items()
+                 if roles != {"baseline", "treatment"}]
+    checks.append(_check("pairing", sym_fail,
+                         "every finished pair has both arms; excluded tasks never ran"))
+    return checks
+
+
+def write_audit(run_dir: Path) -> tuple[bool, Path]:
+    checks = audit_run(run_dir)
+    passed = all(c.passed for c in checks)
+    path = run_dir / "audit.json"
+    path.write_text(json.dumps({"passed": passed, "checks": [asdict(c) for c in checks]},
+                               indent=2) + "\n")
+    return passed, path

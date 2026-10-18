@@ -29,12 +29,18 @@ def harbor_version(env: dict[str, str]) -> str:
 
 
 def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
-                   root: Path) -> list[str]:
+                   root: Path, capture_env: dict[str, str],
+                   mounts: list[dict]) -> list[str]:
+    clash = set(capture_env) & set(trial_env.agent_env)
+    if clash:
+        raise ValueError(f"arm env sets capture variables {sorted(clash)}")
     argv = [
         harbor_bin(), "run",
         "-p", str(task_dir),
         "-a", arm.harness,
-        "-m", f"anthropic/{arm.model}",
+        # Bare id: Harbor keeps a provider prefix only when a base URL is set, which would make
+        # the two routes send different model strings.
+        "-m", arm.model,
         "-o", str(out_dir),
         "-n", "1",
         "--ak", f"version={arm.harness_version}",
@@ -46,8 +52,10 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         argv += ["--ak", f"append_system_prompt={text}"]
     if "settings_file" in arm.inject:
         argv += ["--ak", f"config={root / arm.inject['settings_file']}"]
-    for key, value in sorted(trial_env.agent_env.items()):
+    for key, value in sorted({**trial_env.agent_env, **capture_env}.items()):
         argv += ["--ae", f"{key}={value}"]
+    if mounts:
+        argv += ["--mounts", json.dumps(mounts)]
     return argv
 
 

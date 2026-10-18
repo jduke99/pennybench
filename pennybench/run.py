@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from pennybench.agent_env import build_trial_env
+from pennybench.capture import WireCapture, capture_hosts
 from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
 from pennybench.plan import PlannedTrial, plan_trials
@@ -67,6 +68,12 @@ def _arm_record(arm: Arm, config: LocalConfig, root: Path) -> dict:
     return record
 
 
+def experiment_capture_hosts(experiment: Experiment, config: LocalConfig) -> list[str]:
+    arms = (experiment.baseline, experiment.treatment)
+    return capture_hosts([config.endpoint(a.endpoint_name).base_url
+                          for a in arms if a.endpoint_name])
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -102,6 +109,10 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
             "baseline": _arm_record(experiment.baseline, config, experiment.root),
             "treatment": _arm_record(experiment.treatment, config, experiment.root),
         },
+        "capture_hosts": experiment_capture_hosts(experiment, config),
+        # The isolation audit looks for this path in request bytes: a hit means host files or
+        # config reached the model.
+        "host_home": environ.get("HOME", ""),
         "plan": [t.to_json() for t in plan_trials(experiment)],
     }
     (run_dir / "run.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -132,11 +143,19 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     trial_dir.mkdir(parents=True)
 
     trial_env = build_trial_env(arm, config, environ)
-    argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root)
-    started = _now()
-    t0 = time.monotonic()
-    outcome = run_harbor(argv, trial_env.host_env, trial_dir / "harbor", trial_dir / "harbor.log")
-    wall = time.monotonic() - t0
+    capture = WireCapture(trial_dir / "wire", experiment_capture_hosts(experiment, config),
+                          config.store / ".mitmproxy")
+    capture.start()
+    try:
+        argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root,
+                              capture.agent_env(), capture.mounts())
+        started = _now()
+        t0 = time.monotonic()
+        outcome = run_harbor(argv, trial_env.host_env, trial_dir / "harbor",
+                             trial_dir / "harbor.log")
+        wall = time.monotonic() - t0
+    finally:
+        capture.stop()
 
     leaks = find_secret_leaks(trial_dir, trial_env.secrets)
     result = outcome.result or {}

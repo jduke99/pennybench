@@ -48,9 +48,18 @@ From reading Harbor 0.24.0's `agents/installed/claude_code.py`:
   the injection points arms need.
 - `--ae KEY=VALUE` passes arbitrary env vars to the agent.
 
-**Open, verify in phase 0:** subscription auth. The adapter does not model
-`CLAUDE_CODE_OAUTH_TOKEN`; passing it via `--ae` should reach the CLI, but this is untested.
-Codex's ChatGPT-login auth through Harbor's `codex.py` is also unverified.
+Verified in phase 0:
+
+- Subscription auth works by passing `CLAUDE_CODE_OAUTH_TOKEN` through `--ae`. A keyed proxy
+  takes the token as `ANTHROPIC_AUTH_TOKEN` and its own key as `ANTHROPIC_API_KEY`.
+- Harbor forwards host `ANTHROPIC_*` variables, so it runs under a minimal environment.
+- Harbor keeps the `anthropic/` model prefix only when a base URL is set, so PennyBench passes
+  the bare model id to keep request bytes identical across routes.
+- Wire capture runs as a host-side mitmdump per trial. The container reaches it through
+  `HTTPS_PROXY=http://host.docker.internal:<port>` and trusts its CA via a read-only mount and
+  `NODE_EXTRA_CA_CERTS`. Wire usage matches Claude Code's own reported usage exactly.
+
+Still unverified: Codex's ChatGPT-login auth through Harbor's `codex.py`.
 
 ## Layout
 

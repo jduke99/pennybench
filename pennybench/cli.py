@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
 
 from pennybench.agent_env import build_trial_env
+from pennybench.audit import write_audit
 from pennybench.config import LOCAL_CONFIG_NAME, ConfigError, load_local_config
 from pennybench.plan import plan_trials
 from pennybench.run import RunError, check_resumable, execute, start_run
@@ -72,6 +74,17 @@ def cmd_run(args) -> int:
     return 0
 
 
+def cmd_audit(args) -> int:
+    run_dir = Path(args.run_dir).resolve()
+    passed, path = write_audit(run_dir)
+    for check in json.loads(path.read_text())["checks"]:
+        print(f"{'PASS' if check['passed'] else 'FAIL'}  {check['name']:<10} {check['detail']}")
+        for failure in check["failures"]:
+            print(f"        {failure}")
+    print(f"audit {'passed' if passed else 'FAILED'}: {path}")
+    return 0 if passed else 1
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="pennybench")
     parser.add_argument("--root", default=".", help="PennyBench repo root")
@@ -88,6 +101,10 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("--allow-dirty", action="store_true",
                      help="run from an uncommitted tree; the run is marked not pre-registered")
     run.set_defaults(func=cmd_run)
+
+    audit = sub.add_parser("audit", help="check a run's artifacts before any stats")
+    audit.add_argument("run_dir")
+    audit.set_defaults(func=cmd_audit)
 
     args = parser.parse_args(argv)
     try:
