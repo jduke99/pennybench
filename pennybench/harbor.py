@@ -29,11 +29,13 @@ def harbor_version(env: dict[str, str]) -> str:
 
 
 def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
-                   root: Path, capture_env: dict[str, str],
+                   root: Path, runner_env: dict[str, str],
                    mounts: list[dict]) -> list[str]:
-    clash = set(capture_env) & set(trial_env.agent_env)
+    """`runner_env` is what PennyBench itself sets in every trial (capture proxy, updater
+    off); an arm may not override it."""
+    clash = set(runner_env) & set(trial_env.agent_env)
     if clash:
-        raise ValueError(f"arm env sets capture variables {sorted(clash)}")
+        raise ValueError(f"arm env sets runner variables {sorted(clash)}")
     argv = [
         harbor_bin(), "run",
         "-p", str(task_dir),
@@ -52,7 +54,7 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         argv += ["--ak", f"append_system_prompt={text}"]
     if "settings_file" in arm.inject:
         argv += ["--ak", f"config={root / arm.inject['settings_file']}"]
-    for key, value in sorted({**trial_env.agent_env, **capture_env}.items()):
+    for key, value in sorted({**trial_env.agent_env, **runner_env}.items()):
         argv += ["--ae", f"{key}={value}"]
     if mounts:
         argv += ["--mounts", json.dumps(mounts)]

@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Mapping
 
+from pennybench.agent_cache import ensure_claude_code
 from pennybench.agent_env import build_trial_env
 from pennybench.capture import WireCapture, capture_hosts
 from pennybench.config import LocalConfig
@@ -74,6 +75,14 @@ def experiment_capture_hosts(experiment: Experiment, config: LocalConfig) -> lis
                           for a in arms if a.endpoint_name])
 
 
+def agent_cache_root(config: LocalConfig) -> Path:
+    return config.store / ".agents"
+
+
+# A mounted binary must stay the pinned version for the whole run.
+RUNNER_AGENT_ENV = {"DISABLE_AUTOUPDATER": "1"}
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -84,8 +93,11 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
     if git.dirty and not allow_dirty:
         raise RunError("working tree is dirty; commit the experiment first so the run is "
                        "pre-registered, or pass --allow-dirty for a run that is not a claim")
+    builds = {}
     for arm in (experiment.baseline, experiment.treatment):
         build_trial_env(arm, config, environ)
+        builds[arm.harness_version] = ensure_claude_code(
+            arm.harness_version, agent_cache_root(config)).record()
 
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_dir = config.store / experiment.id / f"{stamp}-{git.sha[:8]}"
@@ -109,6 +121,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
             "baseline": _arm_record(experiment.baseline, config, experiment.root),
             "treatment": _arm_record(experiment.treatment, config, experiment.root),
         },
+        "agent_builds": builds,
         "capture_hosts": experiment_capture_hosts(experiment, config),
         # The isolation audit looks for this path in request bytes: a hit means host files or
         # config reached the model.
@@ -143,12 +156,14 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     trial_dir.mkdir(parents=True)
 
     trial_env = build_trial_env(arm, config, environ)
+    build = ensure_claude_code(arm.harness_version, agent_cache_root(config))
     capture = WireCapture(trial_dir / "wire", experiment_capture_hosts(experiment, config),
                           config.store / ".mitmproxy")
     capture.start()
     try:
         argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root,
-                              capture.agent_env(), capture.mounts())
+                              {**capture.agent_env(), **RUNNER_AGENT_ENV},
+                              capture.mounts() + build.mounts())
         started = _now()
         t0 = time.monotonic()
         outcome = run_harbor(argv, trial_env.host_env, trial_dir / "harbor",
