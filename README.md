@@ -22,7 +22,7 @@ documentation live under [benchmarks/](benchmarks/README.md).
 | Cache-write tokens | −20.6% | [−28.1, −13.2] | −19.0% | 3.76e−07 |
 | Model calls | +0.0% | [+0.0, +0.0] | +1.0% | 0.912 |
 | Agent execution time | −13.4% | [−19.8, +9.3] | −20.2% | 0.244 |
-| Official task reward (6 higher, 4 lower, 47 tied) | n/a | n/a | +8.9% (0.570 → 0.621) | 0.754 (sign test) |
+| Task reward (6 higher, 4 lower, 47 tied) | n/a | n/a | +8.9% (0.570 → 0.621) | 0.754 (sign test) |
 
 ## Install
 
