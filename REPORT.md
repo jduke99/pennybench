@@ -1,16 +1,16 @@
 # 60-task report
 
-Scope: the first 60 projects scheduled in the original 72-project evaluation. The user requested stopping further work and reporting these 60 tasks.
+Scope: the first 60 tasks scheduled in the original 72-task evaluation. The user requested stopping further work and reporting these 60 tasks.
 
-**57 comparable pairs** contribute to paired statistics. One project (paratransit-routing) has a native timeout. Two projects (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. The omissions are explicitly post-hoc; this is not a claim from a completed, pre-registered 60-project experiment. No grader, trial reward, original manifest, or original artifact was changed.
+**57 comparable pairs** contribute to paired statistics. One task (paratransit-routing) has a native timeout. Two tasks (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. The omissions are explicitly post-hoc; this is not a claim from a completed, pre-registered 60-task experiment. No grader, trial reward, original manifest, or original artifact was changed.
 
-Trial directories here are links to the original preserved artifacts. Audit PASS means the included evidence passed the checks, not that missing evidence was recovered. Execution beyond the first 60 projects is outside this report.
+Trial directories here are links to the original preserved artifacts. Audit PASS means the included evidence passed the checks, not that missing evidence was recovered. Execution beyond the first 60 tasks is outside this report.
 
 ## Report
 
 ```text
 proxy-full-60-project-partial  stage=full  tasks=57
-status: NOT A CLAIM — evaluation stopped after the first 60 scheduled projects; subset and environment omissions were selected post-hoc, not pre-registered
+status: NOT A CLAIM — evaluation stopped after the first 60 scheduled tasks; subset and environment omissions were selected post-hoc, not pre-registered
 dropped pairs: 1 (a pair counts only if both arms completed)
 
 endpoint            role           median              95% CI      H-L       p  lower/higher/eq    total
