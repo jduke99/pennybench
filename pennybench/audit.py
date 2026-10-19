@@ -12,6 +12,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from pennybench.capture import ANTHROPIC_HOST
+from pennybench.artifacts import trial_records
 from pennybench.wire import model_calls, read_capture
 
 FINAL_STATUSES = ("complete", "agent_error")
@@ -87,7 +88,7 @@ def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEviden
 def load_evidence(run_dir: Path) -> tuple[dict, list[TrialEvidence]]:
     manifest = json.loads((run_dir / "run.json").read_text())
     evidence = []
-    for path in sorted((run_dir / "trials").glob("*/trial.json")):
+    for path in trial_records(run_dir):
         record = json.loads(path.read_text())
         evidence.append(trial_evidence(path.parent, record, manifest))
     return manifest, evidence

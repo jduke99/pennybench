@@ -23,11 +23,16 @@ CONTAINER_LAUNCHER = "/usr/local/bin/claude"
 
 # Picks the glibc or musl build the same way the official installer does.
 LAUNCHER = f"""#!/bin/sh
+case "$(uname -m)" in
+  x86_64|amd64) arch=x64 ;;
+  aarch64|arm64) arch=arm64 ;;
+  *) echo "unsupported container architecture" >&2; exit 1 ;;
+esac
 if [ -f /lib/libc.musl-x86_64.so.1 ] || [ -f /lib/libc.musl-aarch64.so.1 ] || \\
    ldd /bin/ls 2>&1 | grep -q musl; then
-  exec {CONTAINER_DIR}/linux-ARCH-musl/claude "$@"
+  exec {CONTAINER_DIR}/linux-$arch-musl/claude "$@"
 fi
-exec {CONTAINER_DIR}/linux-ARCH/claude "$@"
+exec {CONTAINER_DIR}/linux-$arch/claude "$@"
 """
 
 
@@ -85,7 +90,9 @@ def _download(url: str, dest: Path) -> None:
 
 
 def ensure_claude_code(version: str, cache_root: Path, arch: str | None = None) -> ClaudeCodeBuild:
-    arch = arch or docker_arch()
+    # A dataset can mix native arm64 and emulated x64 images on the same daemon.
+    # Cache both by default; the launcher chooses from inside the task container.
+    arch = arch or "multi"
     directory = cache_root / "claude-code" / version
     directory.mkdir(parents=True, exist_ok=True)
     manifest_path = directory / "manifest.json"
@@ -94,7 +101,8 @@ def ensure_claude_code(version: str, cache_root: Path, arch: str | None = None) 
     platforms = json.loads(manifest_path.read_text()).get("platforms", {})
 
     checksums = {}
-    for platform in (f"linux-{arch}", f"linux-{arch}-musl"):
+    architectures = ("arm64", "x64") if arch == "multi" else (arch,)
+    for platform in [p for a in architectures for p in (f"linux-{a}", f"linux-{a}-musl")]:
         if platform not in platforms:
             raise AgentCacheError(f"Claude Code {version} has no {platform} build")
         expected = platforms[platform]["checksum"]
@@ -110,6 +118,6 @@ def ensure_claude_code(version: str, cache_root: Path, arch: str | None = None) 
         checksums[platform] = actual
 
     build = ClaudeCodeBuild(version=version, arch=arch, directory=directory, checksums=checksums)
-    build.launcher.write_text(LAUNCHER.replace("ARCH", arch))
+    build.launcher.write_text(LAUNCHER)
     build.launcher.chmod(0o755)
     return build

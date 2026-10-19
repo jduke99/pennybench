@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import Callable, Mapping
 
 from pennybench.agent_cache import ensure_claude_code
+from pennybench.artifacts import trial_records
 from pennybench.agent_env import build_trial_env
 from pennybench.capture import ANTHROPIC_HOST, WireCapture, capture_hosts
 from pennybench.claude_login import (StagedLogin, ensure_login, probe_usage, remove_copies,
@@ -284,7 +285,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
 
 def completed_trials(run_dir: Path) -> set[str]:
     done = set()
-    for path in (run_dir / "trials").glob("*/trial.json"):
+    for path in trial_records(run_dir):
         record = json.loads(path.read_text())
         if record["status"] in FINAL_STATUSES:
             done.add(record["trial_id"])

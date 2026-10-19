@@ -9,6 +9,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from pennybench.wire import ModelCall, model_calls, read_capture, usage_totals
+from pennybench.artifacts import trial_records
 
 RATES_PATH = Path(__file__).with_name("rates.json")
 
@@ -160,7 +161,7 @@ def run_egress(run_dir: Path) -> list[ModelCall] | None:
 def run_metrics(run_dir: Path) -> list[dict]:
     egress = run_egress(run_dir)
     return [trial_metrics(p.parent, egress)
-            for p in sorted((run_dir / "trials").glob("*/trial.json"))]
+            for p in trial_records(run_dir)]
 
 
 def unattributed_egress(run_dir: Path) -> dict | None:
@@ -170,7 +171,7 @@ def unattributed_egress(run_dir: Path) -> dict | None:
     if egress is None:
         return None
     nonces = [json.loads(p.read_text()).get("cache_nonce")
-              for p in (run_dir / "trials").glob("*/trial.json")]
+              for p in trial_records(run_dir)]
     loose = [c for c in egress if not any(n and n in c.request_text for n in nonces)]
     return {"calls": len(loose), "cost": sum(call_cost(c) for c in loose),
             "models": sorted({(c.responded_model or c.requested_model or "?") for c in loose})}

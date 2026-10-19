@@ -73,6 +73,26 @@ def test_single_arm_audit_needs_no_pair_and_report_is_never_a_claim(tmp_path):
     assert (run / "solo.json").exists()
 
 
+def test_archived_attempts_do_not_override_finished_trials(tmp_path):
+    import shutil
+    from pennybench.metrics import run_metrics
+    from pennybench.run import completed_trials
+    run = make_solo_run(tmp_path, [1.0, 1.0])
+    current = sorted((run / "trials").iterdir())[0]
+    archived = current.with_name(current.name + ".attempt-1")
+    shutil.copytree(current, archived)
+    record = json.loads((archived / "trial.json").read_text())
+    record["status"] = "usage_limit"
+    record["reward"] = None
+    (archived / "trial.json").write_text(json.dumps(record))
+    metrics = run_metrics(run)
+    assert len(metrics) == 2 and all(t["status"] == "complete" for t in metrics)
+    assert len(completed_trials(run)) == 2
+    checks = audit_run(run)
+    assert all(c.passed for c in checks)
+    assert next(c for c in checks if c.name == "complete").detail.startswith("2 of 2")
+
+
 def test_incomplete_single_arm_trials_are_listed_and_excluded(tmp_path):
     run = make_solo_run(tmp_path, [1.0, None])
     summary = build_report(run, partial=True)["solo"]["summary"]
