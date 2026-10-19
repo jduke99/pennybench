@@ -8,6 +8,23 @@ tokens, execution time, and official task rewards.
 The shared runner lives in `pennybench/`. Dataset pins, experiment definitions and
 documentation live under [benchmarks/](benchmarks/README.md).
 
+## Results
+
+SkillsBench v1.1, 60 tasks (57 paired), Claude Code with Sonnet 5.5, native versus PennyRouter:
+
+| Measure | Native | PennyRouter | Change |
+| --- | --- | --- | --- |
+| Model-call cost, summed | $6.68 | $4.66 | **-30.1%** |
+| Model-call cost, median per task | | | **-34.0%** (95% CI -37.2% to -28.4%); lower on 53 of 57 |
+| Total tokens, median per task | | | -18.0% (95% CI -21.1% to -14.7%) |
+| Wall clock, median per task | | | -13.4% (95% CI -19.8% to +9.3%; not significant) |
+| Mean official task reward | 0.570 | 0.621 | no significant difference (higher on 6, lower on 4, tied on 47) |
+
+Cost is notional USD at pinned rates, not a subscription bill. The run used a signed-in
+Claude subscription at medium effort and was stopped after 60 of 72 scheduled tasks; the
+stop and two environment omissions were decided after the fact, so these figures describe
+those tasks and are not a pre-registered result.
+
 | Suite | Start here |
 | --- | --- |
 | SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) · [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/) |

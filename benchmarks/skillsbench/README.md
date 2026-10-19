@@ -2,7 +2,7 @@
 
 **60 tasks evaluated using Harbor and SkillsBench task-provided verifiers.**
 PennyRouter reduced median model-call cost by 34.0% across 57 comparable pairs;
-summed cost was 30.1% lower. Official rewards were higher on 6 projects, lower on 4,
+summed cost was 30.1% lower. Official rewards were higher on 6 tasks, lower on 4,
 and equal on 47. The methodology documents the 2 environment omissions and 1
 incomplete pair; they remain visible in the task register.
 
