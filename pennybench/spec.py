@@ -16,6 +16,7 @@ from pennybench.metrics import METRICS
 HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
 STAGES = ("audit", "smoke", "smoke-k3", "full")
+TASK_ORDERS = ("random", "agent_timeout")
 TASK_SKILLS = ("with", "without")
 # trial: append a line unique to the run and trial to every task instruction, so no trial can
 # read prompt cache left by an identical request in an earlier run or another rep.
@@ -84,6 +85,8 @@ class Experiment:
     stage: str
     k: int
     seed: int
+    task_order: str
+    cleanup_prebuilt_images: bool
     endpoints: dict[str, list[str]]
     quality: dict[str, Any]
     source: Path
@@ -213,6 +216,12 @@ def resolve_tasks(raw_tasks: Any, root: Path, dataset_store: Path | None,
     """`tasks` is a repo-relative path, or {dataset: org/name@ref, sha256: <tree hash>}."""
     if isinstance(raw_tasks, str):
         return root / raw_tasks, {"path": raw_tasks}
+    if isinstance(raw_tasks, dict) and raw_tasks.get("path") and raw_tasks.get("sha256"):
+        tasks = root / raw_tasks["path"]
+        actual = content_sha256(tasks)
+        if actual != raw_tasks["sha256"]:
+            raise SpecError(f"{where}: task tree has content {actual}, expected {raw_tasks['sha256']}")
+        return tasks, {"path": raw_tasks["path"], "sha256": raw_tasks["sha256"]}
     if isinstance(raw_tasks, dict) and raw_tasks.get("dataset") and raw_tasks.get("sha256"):
         if dataset_store is None:
             raise SpecError(f"{where}: a dataset task set needs the artifact store")
@@ -245,6 +254,12 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
     k = int(raw.get("k", 1))
     if k < 1:
         raise SpecError(f"{path}: k must be at least 1")
+    task_order = raw.get("task_order", "random")
+    if task_order not in TASK_ORDERS:
+        raise SpecError(f"{path}: task_order must be one of {TASK_ORDERS}")
+    cleanup_prebuilt_images = raw.get("cleanup_prebuilt_images", False)
+    if not isinstance(cleanup_prebuilt_images, bool):
+        raise SpecError(f"{path}: cleanup_prebuilt_images must be a boolean")
 
     tasks, tasks_source = resolve_tasks(_require(raw, "tasks", path), root, dataset_store, path)
     task_skills = _require(raw, "task_skills", path)
@@ -284,6 +299,8 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         stage=stage,
         k=k,
         seed=int(_require(raw, "seed", path)),
+        task_order=task_order,
+        cleanup_prebuilt_images=cleanup_prebuilt_images,
         endpoints=endpoints,
         quality=raw.get("quality") or {},
         source=path,

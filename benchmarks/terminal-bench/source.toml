@@ -1,0 +1,6 @@
+suite = "Terminal-Bench 2.1"
+repository = "https://github.com/harbor-framework/terminal-bench-2-1"
+commit = "7131e4375048a0e408a8fb404b5f499d726b695b"
+tasks_subdirectory = "tasks"
+task_tree_sha256 = "03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0"
+task_count = 89

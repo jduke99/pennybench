@@ -15,7 +15,7 @@ from typing import Callable
 from pennybench.config import LocalConfig
 from pennybench.environment import (record_environment, remove_stray_containers,
                                     remove_stray_images)
-from pennybench.harbor import harbor_bin, run_harbor
+from pennybench.harbor import harbor_bin, run_harbor, task_timeout_s
 from pennybench.spec import Experiment
 
 # SkillsBench reference solutions look for their task's skills at /skills, at ~/.claude/skills
@@ -54,9 +54,10 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
         targets = sorted({*ORACLE_SKILLS_PATHS, str(Path(image_workdir(task_dir)) / "skills")})
         argv += ["--mounts", json.dumps([{"type": "bind", "source": str(skills), "target": t,
                                           "read_only": True} for t in targets])]
-    outcome = run_harbor(argv, env, out_dir / "harbor", out_dir / "harbor.log")
+    outcome = run_harbor(argv, env, out_dir / "harbor", out_dir / "harbor.log",
+                         timeout_s=task_timeout_s(task_dir))
     result = outcome.result or {}
-    environment = record_environment(result.get("trial_name"), out_dir)
+    environment = record_environment(result.get("trial_name"), out_dir, task_dir)
     remove_stray_images(task_dir.name)
     remove_stray_containers(task_dir.name)
     record = {

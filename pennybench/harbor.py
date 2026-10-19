@@ -8,6 +8,7 @@ import signal
 import shutil
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -77,10 +78,25 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
     return argv
 
 
-# A trial's own limits are build (up to ~15 min on a cold cache), agent (<= 15 min), and
-# verifier (<= 15 min). Harbor's timeouts depend on `docker compose` calls returning; when one
-# wedges, they never fire. This hard cap is the backstop.
+# Harbor's timeouts depend on `docker compose` calls returning; when one wedges,
+# they may never fire. Keep a one-hour minimum for the process backstop.
 TRIAL_TIMEOUT_S = 3600
+
+
+def task_timeout_s(task_dir: Path) -> float:
+    """Backstop beyond build, setup, agent and verifier limits, plus teardown slack.
+
+    Harbor's own limits remain unchanged. 360 seconds allows agent setup and
+    600 seconds allows orchestration/cleanup. Tasks without an agent limit
+    retain the existing one-hour backstop.
+    """
+    task = tomllib.loads((task_dir / "task.toml").read_text())
+    build = task.get("environment", {}).get("build_timeout_sec", 600)
+    agent = task.get("agent", {}).get("timeout_sec")
+    if agent is None:
+        return TRIAL_TIMEOUT_S
+    verifier = task.get("verifier", {}).get("timeout_sec", 600)
+    return max(TRIAL_TIMEOUT_S, build + 360 + agent + verifier + 600)
 
 
 @dataclass(frozen=True)

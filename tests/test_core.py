@@ -196,6 +196,38 @@ def test_plan_alternates_arm_order_and_is_seeded(tmp_path):
 
 # Secret scan
 
+def test_plan_orders_by_agent_limit_then_verifier_and_preserves_pairs(tmp_path):
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    limits = {"long": (1800, 900), "short": (600, 600), "tie": (600, 900)}
+    write_tasks(tmp_path, list(limits))
+    for name, (agent, verifier) in limits.items():
+        (tmp_path / "tasks" / name / "task.toml").write_text(
+            f'[agent]\ntimeout_sec = {agent}\n[verifier]\ntimeout_sec = {verifier}\n')
+    exp = load_experiment(write_experiment(
+        tmp_path, ["a", "b"], "route", k=2, task_order="agent_timeout"), tmp_path)
+    trials = plan_trials(exp)
+    assert [t.task for t in trials if t.position == 0] == ["short", "short", "tie", "tie", "long", "long"]
+    assert [t.role for t in trials if t.position == 0] == ["baseline", "treatment"] * 3
+    assert trials == plan_trials(exp)
+    for pair in range(6):
+        a, b = trials[2 * pair:2 * pair + 2]
+        assert (a.task, a.rep) == (b.task, b.rep)
+
+
+def test_pinned_local_task_tree_rejects_changes(tmp_path):
+    from pennybench.digest import tree_sha256
+    write_arm(tmp_path, "a")
+    write_arm(tmp_path, "b", route="endpoint:proxy")
+    write_tasks(tmp_path, ["t1"])
+    path = write_experiment(tmp_path, ["a", "b"], "route", tasks={
+        "path": "tasks", "sha256": tree_sha256(tmp_path / "tasks")})
+    assert len(load_experiment(path, tmp_path).task_dirs()) == 1
+    (tmp_path / "tasks" / "t1" / "task.toml").write_text('[agent]\ntimeout_sec = 42\n')
+    with pytest.raises(SpecError, match="task tree has content"):
+        load_experiment(path, tmp_path)
+
+
 def test_secret_scan_finds_leaks_and_passes_clean_trees(tmp_path):
     (tmp_path / "clean.json").write_text('{"ANTHROPIC_API_KEY": "${PENNYBENCH_SECRET_ENDPOINT}"}')
     assert find_secret_leaks(tmp_path, (OAUTH, PROXY_KEY)) == []
@@ -319,6 +351,50 @@ def test_manifest_is_sorted_by_section(monkeypatch):
 def test_trial_image_name_matches_harbor():
     from pennybench.environment import trial_image
     assert trial_image("fizzbuzz__wEcUKDW") == "fizzbuzz__wecukdw__env-main:latest"
+
+
+def test_prebuilt_cleanup_removes_only_declared_image_without_force(tmp_path, monkeypatch):
+    import subprocess
+    from pennybench.environment import retire_prebuilt_image
+    (tmp_path / "task.toml").write_text('[environment]\ndocker_image = "suite/task:fixed"\n')
+    calls = []
+    def run(argv, **kwargs):
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 0, "", "")
+    monkeypatch.setattr(subprocess, "run", run)
+    retire_prebuilt_image(tmp_path)
+    assert calls == [["docker", "image", "inspect", "suite/task:fixed"],
+                     ["docker", "image", "rm", "suite/task:fixed"]]
+
+
+@pytest.mark.parametrize("prebuilt", [True, False])
+def test_environment_records_prebuilt_without_removing_shared_image(tmp_path, monkeypatch, prebuilt):
+    import subprocess
+    from pennybench import environment
+    task = tmp_path / "task"
+    task.mkdir()
+    (task / "task.toml").write_text(
+        '[environment]\ndocker_image = "suite/task:fixed"\n' if prebuilt else '')
+    calls, removed = [], []
+    monkeypatch.setattr(subprocess, "run", lambda *a, **k: subprocess.CompletedProcess(a, 0))
+    monkeypatch.setattr(environment, "read_manifest", lambda image: calls.append(image) or '# dpkg\nlibc=1\n')
+    monkeypatch.setattr(environment, "remove_image", removed.append)
+    result = environment.record_environment("trial", tmp_path, task)
+    image = "suite/task:fixed" if prebuilt else environment.trial_image("trial")
+    assert calls == [image]
+    assert removed == ([] if prebuilt else [image])
+    assert result["sha256"] and result["error"] is None
+    assert (tmp_path / "environment.txt").read_text() == '# dpkg\nlibc=1\n'
+
+
+def test_long_task_backstop_exceeds_all_phase_limits(tmp_path):
+    from pennybench.harbor import task_timeout_s
+    (tmp_path / "task.toml").write_text(
+        '[environment]\nbuild_timeout_sec = 600\n'
+        '[agent]\ntimeout_sec = 12000\n[verifier]\ntimeout_sec = 12000\n')
+    assert task_timeout_s(tmp_path) > 600 + 360 + 12000 + 12000
+    (tmp_path / "task.toml").write_text('[agent]\ntimeout_sec = 900\n')
+    assert task_timeout_s(tmp_path) == 3600
 
 
 # Cache isolation

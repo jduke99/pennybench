@@ -19,11 +19,11 @@ from pennybench.claude_login import (StagedLogin, ensure_login, probe_usage, rem
                                      sweep_leftovers, usage_stop_reason)
 from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
-from pennybench.harbor import harbor_command, harbor_version, run_harbor
+from pennybench.harbor import harbor_command, harbor_version, run_harbor, task_timeout_s
 from pennybench.plan import PlannedTrial, plan_trials
 from pennybench.digest import file_sha256
 from pennybench.environment import (record_environment, remove_stray_containers,
-                                    remove_stray_images)
+                                    remove_stray_images, retire_prebuilt_image)
 from pennybench.spec import Arm, Experiment, task_skill_dirs
 
 # Statuses that end a trial for good; anything else is retried on resume.
@@ -158,6 +158,8 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "stage": experiment.stage,
         "k": experiment.k,
         "seed": experiment.seed,
+        "task_order": experiment.task_order,
+        "cleanup_prebuilt_images": experiment.cleanup_prebuilt_images,
         "endpoints": experiment.endpoints,
         "quality": experiment.quality,
         "exclude": [{"task": e.task, "reason": e.reason} for e in experiment.exclude],
@@ -230,7 +232,8 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         started = _now()
         t0 = time.monotonic()
         host_env = {**trial_env.host_env, **(config.builder.env() if config.builder else {})}
-        outcome = run_harbor(argv, host_env, trial_dir / "harbor", trial_dir / "harbor.log")
+        outcome = run_harbor(argv, host_env, trial_dir / "harbor", trial_dir / "harbor.log",
+                             timeout_s=task_timeout_s(task_dir))
         wall = time.monotonic() - t0
     finally:
         capture.stop()
@@ -244,7 +247,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
             login_record["removed_copies"] = removed
             login_record.update(login.plan)
     result = outcome.result or {}
-    environment = record_environment(result.get("trial_name"), trial_dir)
+    environment = record_environment(result.get("trial_name"), trial_dir, task_dir)
     remove_stray_images(trial.task)
     remove_stray_containers(trial.task)
     leaks = find_secret_leaks(trial_dir, secrets)
@@ -381,6 +384,13 @@ def _execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
                     f"`pennybench run <experiment> --resume {run_dir}` after the window resets")
             # Both trials of a pair share the task image, so the cache is trimmed between pairs.
             if trial.position == len(experiment.roles) - 1:
+                if experiment.cleanup_prebuilt_images:
+                    task_dir = (experiment.tasks if experiment.tasks.name == trial.task
+                                else experiment.tasks / trial.task)
+                    try:
+                        retire_prebuilt_image(task_dir)
+                    except RuntimeError as exc:
+                        raise RunError(str(exc)) from exc
                 if config.builder:
                     config.builder.enforce_cap()
                 # Only between pairs: both arms of a pair always run on the same login.

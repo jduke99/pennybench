@@ -5,6 +5,10 @@ policies. PennyBench runs the same tasks under two configurations that differ in
 variable, proves from the captured traffic that the treatment reached the model, and reports
 per-task paired effects on cost, tokens, code written, time, and verified task quality.
 
+Suite documentation lives under [benchmarks/](benchmarks/README.md):
+[SkillsBench](benchmarks/skillsbench/README.md) retains the stopped 60-task evaluation,
+and [Terminal Bench](benchmarks/terminal-bench/README.md) tracks the next testing stage.
+
 The method follows JetBrains' token-saver series ([ponytail, part 3][ponytail]).
 [DESIGN.md](DESIGN.md) explains the architecture and the reasoning behind each rule.
 
@@ -274,6 +278,7 @@ exclude:
 stage: full                                 # audit | smoke | smoke-k3 | full
 k: 1
 seed: 20261018
+task_order: random                          # or agent_timeout: shortest limit first
 endpoints:
   primary: [cost]
   secondary: [reward, loc_written, output_tokens, fresh_input_tokens, total_tokens, turns, wall_clock]
