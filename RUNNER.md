@@ -181,7 +181,7 @@ or switch the Claude Code login (`claude auth login`) and `--resume`: the login 
 for every trial, so the next trial uses the new account.
 
 Requirements for switching: the new account must be linked to the proxy if an arm routes
-through one (for PennyRouter, run `penny claude` once with it); both arms of a pair always
+through one (for PennyRouter, run `npx pennyrouter install`, select the Anthropic subscription, and confirm `penny claude` starts normally); both arms of a pair always
 run on one login because the check only happens between pairs; and each trial records its
 account plan (`subscription`, `rate_limit_tier`), with the `login_plan` audit check failing a
 pair whose arms ran on different plans. Cost is notional and plan-independent, but a

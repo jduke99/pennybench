@@ -1,24 +1,47 @@
-# Plan: hosted evaluation with API keys
+# Plan: hosted evaluation with Anthropic API keys
 
 The first public release supports hosted PennyRouter through a signed-in Claude
-subscription (`claude-login`): the gateway identifies the user's linked account, so the
-runner sends no separate Penny key. API-key profiles are rejected for proxy arms with a
-separate endpoint key because the model credential and the endpoint credential both use
-`x-api-key`.
+subscription (`claude-login`). API-key evaluation is planned and is not advertised.
 
-Do not advertise API-key hosted evaluation until the steps below are done.
+## How it should work
 
-1. **Decide the wire contract.** Options: (a) gateway accepts the endpoint key in a
-   dedicated header (e.g. `X-Penny-Key`) while `x-api-key` carries the Anthropic key;
-   (b) endpoint key in `Authorization: Bearer`, Anthropic key in `x-api-key`. Prefer (a)
-   and confirm the gateway already forwards `x-api-key` upstream untouched.
-2. **Gateway change** (penny-router, separate review): accept the dedicated header, keep
-   current behaviour when absent, add tests for both-credential requests.
-3. **Runner change:** inject the header from `key_env`; drop the collision rejection for
-   hosted endpoints that advertise support; keep rejection for private endpoints that do
-   not. Add unit tests for header injection and the rejection path.
-4. **Audit:** extend the audit so a dual-auth trial proves the model call reached the
-   declared host and that neither credential appears in captures or logs
-   (`secret_leaks` stays empty).
-5. **Validate** with a one-task smoke on a clean checkout using a separate account, then
-   update `docs/CREDENTIALS.md` and the README quick start.
+The user connects an Anthropic API key to their PennyRouter account, either by selecting
+it during `npx pennyrouter install` or at <https://pennyrouter.com/keys>. PennyRouter then
+holds the provider key.
+
+- Native arm: Claude Code sends the Anthropic key directly to Anthropic, as today.
+- Proxy arm: Claude Code sends only the PennyRouter key (`pr-...`) as `x-api-key` to the
+  hosted endpoint. The Anthropic key is never sent to PennyRouter; the gateway uses the
+  stored one upstream.
+
+Both arms use the same auth profile, so the one-variable check still sees a route-only
+change. The two keys never travel in the same request, so there is no `x-api-key`
+collision.
+
+## What was checked
+
+- The gateway treats a `pr-` key on `x-api-key` as the caller's credential
+  (`auth_anthropic` in `apps/gateway/pennyrouter/main.py`), so no gateway change is needed
+  to authenticate the proxy arm.
+- A raw `sk-ant-` key on `x-api-key` matches no `pr-` row and falls through as an
+  unidentified caller. Sending the Anthropic key to the hosted endpoint is therefore not
+  a supported path; this is why the current `api_key` proxy arm cannot work as written.
+- Not yet verified: that the hosted gateway uses the stored Anthropic key for a
+  `pr-`-keyed Claude Code request on an account with no linked subscription. The keys page
+  labels it an "Anthropic API fallback for Claude Code"; confirm with a one-task run.
+
+## Steps
+
+1. **Runner change: done.** `pennybench/agent_env.py` builds the proxy arm's environment
+   from the endpoint key alone when an `api_key` profile meets an endpoint with `key_env`;
+   the provider key is never read for that arm. Unit tests cover both arms' environments
+   and the missing-variable errors.
+2. **Audit: covered structurally.** The proxy arm's environment never contains the
+   provider key, and `secret_leaks` scans artifacts for the endpoint key. No separate
+   wire audit was added.
+3. **Verify: open.** Run a one-task smoke on a clean checkout with a separate account
+   that has an Anthropic key connected at pennyrouter.com/keys, and confirm the gateway
+   used that key and charged nothing else.
+4. **Docs: partly done.** `docs/CREDENTIALS.md` describes the flow as experimental. After
+   step 3, add the install/keys steps to the README quick start and drop the
+   "experimental" label. Label API-key and subscription results separately.

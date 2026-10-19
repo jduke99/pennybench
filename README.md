@@ -40,7 +40,9 @@ Reproductions use **your** account; PennyBench distributes no credentials, share
 account or subscription access.
 
 1. Sign into Claude Code with `claude auth login`.
-2. Link that same Claude account to your PennyRouter account using `penny claude`.
+2. Install PennyRouter with `npx pennyrouter install` and select the Anthropic subscription.
+   Confirm that `penny claude` starts normally; that links the same Claude account to
+   PennyRouter.
 3. Keep the example's `claude-login` profile. Each arm uses a private staged copy
    of your login; both arms of a pair use the same account plan.
 

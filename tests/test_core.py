@@ -163,10 +163,31 @@ def test_missing_secret_fails_before_any_trial(tmp_path, config):
         build_trial_env(arm, config, {**ENVIRON, "PROXY_KEY": ""})
 
 
-def test_api_key_profile_cannot_share_x_api_key_with_a_keyed_proxy(tmp_path, config):
+def test_native_api_key_arm_sends_the_provider_key_directly(tmp_path, config):
+    arm = load_arm(write_arm(tmp_path, "a", auth="api"))
+    env = build_trial_env(arm, config, ENVIRON)
+    assert env.agent_env == {"ANTHROPIC_API_KEY": f"${{{UPSTREAM_SECRET}}}"}
+    assert env.secrets == ("sk-ant-api-secret",)
+
+def test_keyed_proxy_with_api_key_profile_sends_only_the_endpoint_key(tmp_path, config):
     arm = load_arm(write_arm(tmp_path, "b", route="endpoint:proxy", auth="api"))
-    with pytest.raises(ConfigError, match="collide"):
-        build_trial_env(arm, config, ENVIRON)
+    env = build_trial_env(arm, config, ENVIRON)
+    assert env.agent_env == {
+        "ANTHROPIC_BASE_URL": "http://host.docker.internal:8400",
+        "ANTHROPIC_API_KEY": f"${{{ENDPOINT_SECRET}}}",
+        "ENABLE_TOOL_SEARCH": "true",
+    }
+    assert env.host_env[ENDPOINT_SECRET] == PROXY_KEY
+    assert UPSTREAM_SECRET not in env.host_env
+    assert env.secrets == (PROXY_KEY,)
+    assert "sk-ant-api-secret" not in str(env)
+
+def test_keyed_proxy_with_api_key_profile_needs_no_provider_key_in_the_environment(tmp_path, config):
+    arm = load_arm(write_arm(tmp_path, "b", route="endpoint:proxy", auth="api"))
+    environ = {k: v for k, v in ENVIRON.items() if k != "API_KEY"}
+    assert build_trial_env(arm, config, environ).secrets == (PROXY_KEY,)
+    with pytest.raises(ConfigError, match="PROXY_KEY"):
+        build_trial_env(arm, config, {**environ, "PROXY_KEY": ""})
 
 
 def test_unknown_endpoint_is_a_config_error(tmp_path, config):

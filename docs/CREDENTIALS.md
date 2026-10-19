@@ -6,7 +6,9 @@ PennyBench is not a credential or subscription service.
 
 ## Signed-in Claude subscription: the published workflow
 
-Use `claude auth login`, then link the same account to PennyRouter with `penny claude`.
+Use `claude auth login`, then install PennyRouter with `npx pennyrouter install` and select
+the Anthropic subscription. Confirm that `penny claude` starts normally; that links the same
+account to PennyRouter.
 Keep `auth: claude-login` in both arms and `[auth.claude-login]` in your private
 `pennybench.local.toml`. The default endpoint is `https://api.pennyrouter.com`.
 
@@ -34,14 +36,23 @@ uses `x-api-key`. Keep both secrets in your ignored `.env`, not in YAML or TOML.
 ## Anthropic API keys
 
 The runner supports `kind = "api_key"`, reading `ANTHROPIC_API_KEY` in the example.
-Native trials send it directly to Anthropic. For a custom endpoint that accepts the
-same upstream key on `x-api-key`, the proxy arm can use that profile too.
+Native trials send that key directly to Anthropic.
 
-**Current limitation:** API-key profiles cannot also configure the endpoint's own
-`key_env`: both would use `x-api-key`, and the runner rejects that collision. Do not
-assume a raw Anthropic key authenticates to hosted PennyRouter. A hosted API-key
-comparison requiring separate Penny and provider credentials needs a reviewed auth
-configuration/runner extension before it is advertised as a turnkey workflow.
+Hosted PennyRouter holds your Anthropic key itself; the agent does not send it to the
+gateway. Connect the key once, either by selecting an Anthropic API key during
+`npx pennyrouter install`, or at <https://pennyrouter.com/keys>. Claude Code then
+authenticates to PennyRouter with your PennyRouter key, which PennyRouter issues, and
+PennyRouter uses the stored Anthropic key upstream.
+
+For an `api_key` profile, set `key_env = "PENNY_API_KEY"` on the endpoint. The proxy arm
+then sends only that PennyRouter key as `x-api-key`; your Anthropic key is not read for
+that arm and never reaches the endpoint or the task container. The native arm sends the
+Anthropic key directly. Without `key_env`, the proxy arm sends your Anthropic key to the
+endpoint, which suits a private server that accepts it but not hosted PennyRouter.
+
+Status: the runner behavior is implemented and unit-tested. A real hosted run has not yet
+confirmed that PennyRouter uses the stored key for this account (see
+[API_KEY_PLAN.md](API_KEY_PLAN.md)), so treat this workflow as experimental.
 
 Change both arms' auth profile together when designing an API-key experiment; the
 one-variable check rejects an accidental route-plus-auth change. Keep subscription

@@ -47,6 +47,10 @@ def build_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) -
     profile = config.auth_profile(arm.auth)
     if profile.kind == "claude_login":
         return _login_trial_env(arm, config, environ)
+    if profile.kind == "api_key" and arm.endpoint_name is not None:
+        endpoint = config.endpoint(arm.endpoint_name)
+        if endpoint.key_env:
+            return _stored_key_trial_env(endpoint, environ)
     upstream = _secret(environ, profile.token_env, f"auth profile {profile.name!r}")
     secret_vars = {UPSTREAM_SECRET: upstream}
     upstream_ref = f"${{{UPSTREAM_SECRET}}}"
@@ -69,10 +73,6 @@ def build_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) -
                     environ, endpoint.key_env, f"endpoint {endpoint.name!r}")
                 agent_env["ANTHROPIC_API_KEY"] = f"${{{ENDPOINT_SECRET}}}"
         else:
-            if endpoint.key_env:
-                raise ConfigError(
-                    f"endpoint {endpoint.name!r} has its own key, which would collide with "
-                    f"api_key profile {profile.name!r} on x-api-key")
             agent_env["ANTHROPIC_API_KEY"] = upstream_ref
         clash = RESERVED_AGENT_VARS & set(endpoint.env)
         if clash:
@@ -100,3 +100,19 @@ def _login_trial_env(arm: Arm, config: LocalConfig, environ: Mapping[str, str]) 
         agent_env.update(endpoint.env)
     host_env = {k: environ[k] for k in HOST_PASSTHROUGH if environ.get(k)}
     return TrialEnv(agent_env=agent_env, host_env=host_env, secrets=())
+
+
+def _stored_key_trial_env(endpoint, environ: Mapping[str, str]) -> TrialEnv:
+    """An api_key arm routed through an endpoint that holds the provider key. The agent sends
+    only the endpoint's own key as x-api-key; the provider key is never read, so it cannot
+    reach the endpoint or the container."""
+    key = _secret(environ, endpoint.key_env, f"endpoint {endpoint.name!r}")
+    agent_env = {"ANTHROPIC_BASE_URL": endpoint.base_url,
+                 "ANTHROPIC_API_KEY": f"${{{ENDPOINT_SECRET}}}"}
+    clash = RESERVED_AGENT_VARS & set(endpoint.env)
+    if clash:
+        raise ConfigError(f"endpoint {endpoint.name!r} env may not set {sorted(clash)}")
+    agent_env.update(endpoint.env)
+    host_env = {k: environ[k] for k in HOST_PASSTHROUGH if environ.get(k)}
+    host_env[ENDPOINT_SECRET] = key
+    return TrialEnv(agent_env=agent_env, host_env=host_env, secrets=(key,))
