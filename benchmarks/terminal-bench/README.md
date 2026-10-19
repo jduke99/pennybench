@@ -4,6 +4,17 @@ The next suite is Terminal-Bench 2.1, pinned by [source.toml](source.toml).
 The 89-task source is downloaded locally under
 `runs/terminal-bench-prep/source/`; it is not vendored into the public repo.
 
+After installing PennyBench, acquire the exact source (or verify an existing copy):
+
+```sh
+.venv/bin/python benchmarks/terminal-bench/prepare.py
+.venv/bin/pennybench check benchmarks/terminal-bench/experiments/proxy-tb21-bounded72.yaml
+```
+
+`prepare.py --verify-only` checks the revision, task-tree hash, and selected task
+list without downloading anything. Reference checks and the experiment commit
+remain prerequisites for starting model trials.
+
 The comparison uses the same Claude Code native and PennyRouter proxy arms as
 SkillsBench, varying only the route. There are no task-local skills in this suite.
 
