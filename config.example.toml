@@ -1,24 +1,21 @@
-# Copy to pennybench.local.toml (gitignored). Values here are placeholders.
+# Copy to pennybench.local.toml (ignored): private runner settings, not a local gateway.
 
 [artifacts]
 store = "runs"
 
-# Named endpoints. An arm routes through one with `route = "endpoint:<name>"`.
-# Agents run inside Docker, so a proxy on this machine is http://host.docker.internal:<port>.
 [endpoints.proxy]
-base_url = "http://host.docker.internal:8400"
-key_env = "PROXY_API_KEY"          # env var holding the proxy's own key, never the key itself
-env = { }                          # extra agent env the proxy needs, e.g. feature switches
+base_url = "https://api.pennyrouter.com"
+env = { ENABLE_TOOL_SEARCH = "true" }
+# For a private server, replace base_url with its Docker-reachable HTTPS endpoint.
+# Signed-in claude-login trials identify your linked account; no Penny key is needed here.
+# Token profiles may require a separate PennyRouter key:
+# key_env = "PENNY_API_KEY"
 
-# Auth profiles. An arm selects one with `auth = "<name>"`.
-# kind = "claude_login" uses your own claude.ai sign-in, the way a signed-in user runs Claude
-#   Code (needed for a faithful proxy comparison). Sign in first with `claude auth login`.
-# kind = "oauth" for a subscription token (`claude setup-token`), "api_key" for an API key.
-#   Claude Code given only a token behaves like a signed-out client.
 [auth.claude-login]
 kind = "claude_login"
 min_valid_minutes = 30
 
+# Optional token profiles. See docs/CREDENTIALS.md before using them with proxy arms.
 [auth.claude-subscription]
 kind = "oauth"
 token_env = "CLAUDE_CODE_OAUTH_TOKEN"
@@ -27,8 +24,7 @@ token_env = "CLAUDE_CODE_OAUTH_TOKEN"
 kind = "api_key"
 token_env = "ANTHROPIC_API_KEY"
 
-# Optional: build task images on a dedicated buildx builder and cap its cache. Least recently
-# used layers are evicted after each pair; evicted task images are rebuilt when next needed.
+# Optional dedicated task-image builder and soft cache cap.
 # [docker]
 # builder = "pennybench"
 # build_cache_cap_gb = 40

@@ -2,6 +2,7 @@
 name = "pennybench"
 version = "0.1.0"
 description = "Paired A/B benchmarking for coding-agent setups"
+readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "harbor==0.24.0",
@@ -23,3 +24,6 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["pennybench*"]
+
+[tool.setuptools.package-data]
+pennybench = ["rates.json"]

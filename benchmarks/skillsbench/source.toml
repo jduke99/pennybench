@@ -1,0 +1,7 @@
+suite = "SkillsBench v1.1"
+dataset = "benchflow/skillsbench@v1.1"
+task_tree_sha256 = "ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d"
+task_count = 87
+original_experiment_task_count = 72
+reported_task_count = 60
+comparable_pair_count = 57

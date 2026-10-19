@@ -1,6 +1,13 @@
 pennybench.local.toml
 runs/
 .env
+.env.*
+!.env.example
+.credentials.json
+credentials.json
+*.credentials.json
+/build/
+/dist/
 .venv/
 __pycache__/
 *.pyc

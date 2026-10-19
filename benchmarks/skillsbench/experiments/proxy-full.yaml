@@ -1,0 +1,65 @@
+# Full stage: signed-in native Claude Code vs the same routed through the `proxy` endpoint,
+# on every SkillsBench v1.1 task that passes its own oracle here (72).
+id: proxy-full
+arms: [cc-sonnet-native-login, cc-sonnet-proxy-login]
+variable: route
+tasks:
+  dataset: benchflow/skillsbench@v1.1
+  sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+task_skills: with
+cache_isolation: trial
+exclude:
+  # Oracle pass 2026-10-18 (runs/oracle/benchflow__skillsbench@v1.1): each task below fails
+  # its own reference solution on this machine, so it cannot measure an agent.
+  - task: bike-rebalance
+    reason: >-
+      sets allow_internet = false; Harbor 0.24's Docker environment rejects no-network mode, and an offline container could not reach the capture proxy or the model
+  - task: multilingual-video-dubbing
+    reason: >-
+      arm64: image pins torchaudio==2.6.0+cpu, which has no linux/arm64 build
+  - task: python-scala-translation
+    reason: >-
+      arm64: image downloads an x86_64-only coursier binary
+  - task: syzkaller-ppdev-syzlang
+    reason: >-
+      arm64: build needs the x86_64-linux-gnu-gcc cross compiler
+  - task: lean4-proof
+    reason: >-
+      image build exceeds Harbor's 10-minute environment build limit on this machine
+  - task: earthquake-phase-association
+    reason: >-
+      dependency drift: seisbench 0.10.2 imports pkg_resources, absent with current dependency versions; image build fails
+  - task: seismic-phase-picking
+    reason: >-
+      dependency drift: seisbench 0.10.2 imports pkg_resources, absent with current dependency versions; image build fails
+  - task: gravitational-wave-detection
+    reason: >-
+      dependency drift: reference solution imports astropy.cosmology.core, removed from current astropy
+  - task: simpo-code-reproduction
+    reason: >-
+      verifier environment lacks numpy (its /opt/py310 path is absent and the fallback does not install it)
+  - task: citation-check
+    reason: >-
+      depends on live web lookups; reference solution now flags 6 fake citations where the test expects 3
+  - task: fix-build-agentops
+    reason: >-
+      reference solution's patch_3.diff fails to apply (binary logo.png), so the build it fixes still fails
+  - task: reserves-at-risk-calc
+    reason: >-
+      reference solution cannot read its input workbook (pandas: Excel file format cannot be determined)
+  - task: flink-query
+    reason: >-
+      verifier's Maven build of the reference solution fails; cause not determined
+  - task: fix-druid-loophole-cve
+    reason: >-
+      Druid 0.20.0 server never becomes reachable on port 8888 during verification; cause not determined
+  - task: r2r-mpc-control
+    reason: >-
+      reference controller misses the test's settling-time limit (4.6 s vs < 4.0 s); 5 of 6 checks pass
+stage: full
+k: 1
+seed: 20261018
+endpoints:
+  primary: [cost]
+  secondary: [reward, total_tokens, output_tokens, fresh_input_tokens, cache_read_tokens, cache_write_tokens, turns, wall_clock]
+quality: { test: sign, non_inferiority_margin: null }

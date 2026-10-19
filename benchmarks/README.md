@@ -1,47 +1,46 @@
 # Benchmark suites
 
-PennyBench is the shared measurement runner. Each benchmark suite has its own
-dataset provenance, experiment definitions, compatibility notes, and reports.
+`pennybench/` is the shared runner. Each suite owns its provenance, experiment
+definitions, compatibility notes, and results documentation. No suite forks the runner.
 
-| Suite | Status |
+| Suite | Entry point |
 | --- | --- |
-| [SkillsBench](skillsbench/README.md) | Evaluation stopped after 60 scheduled tasks; report retained. |
-| [Terminal Bench](terminal-bench/README.md) | Terminal-Bench 2.1 reference-solution preflight in progress. |
-
-The public repository layout is planned as:
+| SkillsBench | [60-task report, provenance and reproduction](skillsbench/README.md) |
+| Terminal-Bench 2.1 | [Reproduction guide](terminal-bench/HOW_TO_RUN.md) and [current study](terminal-bench/README.md) |
 
 ```text
-pennybench/                    shared runner, audits, metrics, statistics
-arms/                          shared agent configurations
+pennybench/                    shared runner, capture, audit, metrics and statistics
+arms/                          shared pinned agent configurations
 benchmarks/
+  smoke-login.yaml             tiny shared subscription wiring check
   skillsbench/
-    README.md                  scope, provenance, reproduction instructions
+    README.md
+    source.toml
+    prepare.py
     experiments/               suite-specific experiment definitions
-    reports/                   reviewed, publishable results
+    results/                   reviewed-result index
   terminal-bench/
     README.md
-    source.toml                pinned upstream source and task-tree hash
+    HOW_TO_RUN.md
+    source.toml
+    prepare.py
     experiments/
-    reports/
-tests/                         shared runner tests
-runs/                          ignored local datasets, captures, trial artifacts
+tests/                         shared runner and packaging tests
+runs/                          ignored private evidence, downloaded tasks and caches
 ```
 
-Existing experiment and report paths remain in place during migration so saved
-run manifests and reproduction commands remain valid. The suite pages link to
-them. Future suites should follow this structure without duplicating the runner.
+## Incremental migration
 
-Before publishing:
+Historical files under root `experiments/`, `REPORT.md` and `output/` retain their
+paths. Saved manifests and active jobs must continue to work. SkillsBench's suite
+copies initially preserve the original experiment bytes and names; suite docs use
+the new paths. Terminal-Bench's live definitions are managed separately and are not
+moved by this packaging increment.
 
-- Move suite-specific experiments and reviewed reports into their suite folders;
-  update commands and preserve the original paths recorded in historical manifests.
-- Make dataset acquisition reproducible from pinned upstream revisions and hashes.
-  Keep downloaded task trees and Docker layers out of Git.
-- Review tracked files and Git history for credentials, account identifiers, host
-  paths, and private endpoint details. Ignoring local files does not clean history.
-- Publish reviewed aggregate results and provenance. Raw wire captures and agent
-  transcripts require a separate privacy review before distribution.
-- Add a repository license, dependency and dataset attribution, and contribution
-  instructions. Keep the stopped SkillsBench report's limitations visible.
+The checked-in configuration example uses hosted PennyRouter. A custom HTTPS
+endpoint can be configured for a private server. Each reader supplies their own
+subscription or API credentials; see [the auth guide](../docs/CREDENTIALS.md).
 
-Publication is a separate step; no remote visibility change is part of preflight.
+Before public release, follow the [publication checklist](../docs/PUBLICATION.md).
+Raw captures and agent transcripts are private by default. Packaging does not change
+remote visibility, run any experiments, or decide licensing.
