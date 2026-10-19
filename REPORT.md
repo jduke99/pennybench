@@ -1,6 +1,6 @@
 # 60-task report
 
-Scope: the first 60 tasks scheduled in the original 72-task evaluation.
+Scope: SkillBench Core and Extended tasks (n=60). Excluded tasks in the Extreme (>4hr, n=26) category.
 
 **57 comparable pairs** contribute to paired statistics. One task (paratransit-routing) has a native timeout. Two tasks (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. The omissions are explicitly post-hoc; this is not a claim from a completed, pre-registered 60-task experiment. No grader, trial reward, original manifest, or original artifact was changed.
 
