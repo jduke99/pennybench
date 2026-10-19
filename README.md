@@ -109,5 +109,7 @@ finished pairs from a longer plan; these retain the runner's provenance labels.
 - [Publication checklist](docs/PUBLICATION.md): staged public-repository preparation.
 
 `runs/`, `.env`, personal configuration, downloaded task sets and caches stay private.
-Only reviewed results should be published. This preparation does not publish the
-repository or choose a license on the author's behalf.
+Only reviewed results should be published. 
+
+PennyBench is released under the [Apache License 2.0](LICENSE). Third-party components
+keep their own licenses; see [THIRD_PARTY.md](THIRD_PARTY.md).

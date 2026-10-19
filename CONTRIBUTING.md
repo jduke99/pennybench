@@ -29,4 +29,5 @@ examples; synthetic tokens must be unmistakably fake.
 - Do not publish raw credentials, account metadata or unreviewed transcripts.
 
 Building or testing code is not permission to start/stop a user's gateway, Docker
-daemon, or active jobs. Public release and license selection require maintainer approval.
+daemon, or active jobs. Public release requires maintainer approval. Contributions are accepted under the
+Apache License 2.0 (see `LICENSE`).

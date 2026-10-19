@@ -1,9 +1,8 @@
 # Credentials, tasks and publication safety
 
-Do not post secrets or sensitive raw artifacts in a public issue. Use the repository's
-private vulnerability-reporting channel when available, or arrange a private channel
-with the maintainer before sharing details. A dedicated contact must be configured
-before public release.
+Do not post secrets or sensitive raw artifacts in a public issue. Report
+vulnerabilities privately to jon@pennyrouter.com, or use the repository's private
+vulnerability-reporting channel when available. Do not include secrets in the report.
 
 The following remain private by default:
 

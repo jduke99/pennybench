@@ -17,7 +17,8 @@ to publish, push, change visibility, rewrite history, or stop running jobs.
 - [ ] Finish and review the Terminal-Bench study in the separate evaluation workflow.
 - [ ] Verify subscription onboarding on a clean checkout with a separate user's own account.
 - [ ] Hosted API-key dual authentication: follow `docs/API_KEY_PLAN.md`; not advertised, subscription release first.
-- [ ] Choose the repository license and configure a private security contact.
+- [x] Repository license (Apache-2.0, copyright Jon Duke) and security contact (jon@pennyrouter.com).
+- [ ] Confirm no employer or university claims the rights to this repository's contents.
 - [ ] Verify attribution and redistribution rights for Harbor, datasets and bundled skills.
 - [ ] Audit all tracked files AND history for credentials, account IDs, personal paths,
       private endpoints and raw captures. Do not print found secret values into logs.

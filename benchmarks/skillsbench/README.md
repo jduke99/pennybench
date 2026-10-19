@@ -62,6 +62,14 @@ Each command starts a different study stage; do not launch all stages at once.
 Audit and report the exact run directory printed by each command before advancing.
 Use `--resume` with the same experiment to continue after a usage-window stop.
 
+## Licensing of the dataset
+
+SkillsBench is Apache-2.0, but some task-local skills carry their own terms. About 30 of
+the 232 bundled skills (Anthropic's docx, pdf, pptx and xlsx skills, among others) are
+proprietary and must not be copied or redistributed. This repository ships no dataset
+files; `prepare.py` downloads them into the ignored `runs/` directory. Do not commit
+`runs/`, task directories or raw trial artifacts. See [THIRD_PARTY.md](../../THIRD_PARTY.md).
+
 ## Historical paths
 
 The [root experiment files](../../experiments/proxy-full.yaml) remain intact for

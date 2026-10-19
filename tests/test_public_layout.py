@@ -116,3 +116,10 @@ def test_skillsbench_export_scrubs_private_values():
     out = module.scrub(text)
     assert "someone" not in out and "a@b.edu" not in out and "abc" not in out
     assert "zzz" not in out and "benchflow/skillsbench@v1.1" in out
+
+
+def test_license_and_notices_present():
+    root = Path(__file__).resolve().parents[1]
+    assert "Apache License" in (root / "LICENSE").read_text()
+    assert "Jon Duke" in (root / "NOTICE").read_text()
+    assert "MIT" in (root / "THIRD_PARTY.md").read_text()
