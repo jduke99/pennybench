@@ -1,0 +1,828 @@
+{
+  "ready_for_model_run": true,
+  "created_at": "2026-10-19T20:10:36.097367+00:00",
+  "suite": "Terminal-Bench 2.1",
+  "task_tree_sha256": "03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0",
+  "source_commit": "7131e4375048a0e408a8fb404b5f499d726b695b",
+  "selected_candidates": [
+    "adaptive-rejection-sampler",
+    "break-filter-js-from-html",
+    "build-cython-ext",
+    "build-pmars",
+    "cancel-async-tasks",
+    "chess-best-move",
+    "cobol-modernization",
+    "code-from-image",
+    "configure-git-webserver",
+    "constraints-scheduling",
+    "count-dataset-tokens",
+    "crack-7z-hash",
+    "custom-memory-heap-crash",
+    "db-wal-recovery",
+    "dna-assembly",
+    "dna-insert",
+    "extract-elf",
+    "extract-moves-from-video",
+    "feal-differential-cryptanalysis",
+    "feal-linear-cryptanalysis",
+    "filter-js-from-html",
+    "financial-document-processor",
+    "fix-code-vulnerability",
+    "fix-git",
+    "gcode-to-text",
+    "git-leak-recovery",
+    "git-multibranch",
+    "gpt2-codegolf",
+    "headless-terminal",
+    "hf-model-inference",
+    "kv-store-grpc",
+    "large-scale-text-editing",
+    "largest-eigenval",
+    "llm-inference-batching-scheduler",
+    "log-summary-date-ranges",
+    "mailman",
+    "make-doom-for-mips",
+    "make-mips-interpreter",
+    "mcmc-sampling-stan",
+    "merge-diff-arc-agi-task",
+    "model-extraction-relu-logits",
+    "modernize-scientific-stack",
+    "mteb-retrieve",
+    "multi-source-data-merger",
+    "nginx-request-logging",
+    "openssl-selfsigned-cert",
+    "overfull-hbox",
+    "password-recovery",
+    "path-tracing",
+    "path-tracing-reverse",
+    "polyglot-c-py",
+    "polyglot-rust-c",
+    "protein-assembly",
+    "prove-plus-comm",
+    "pypi-server",
+    "pytorch-model-cli",
+    "pytorch-model-recovery",
+    "qemu-alpine-ssh",
+    "qemu-startup",
+    "query-optimize",
+    "raman-fitting",
+    "regex-log",
+    "rstan-to-pystan",
+    "sanitize-git-repo",
+    "sparql-university",
+    "sqlite-db-truncate",
+    "sqlite-with-gcov",
+    "torch-pipeline-parallelism",
+    "torch-tensor-parallelism",
+    "tune-mjcf",
+    "vulnerable-secret",
+    "write-compressor"
+  ],
+  "model_tasks": [
+    "adaptive-rejection-sampler",
+    "break-filter-js-from-html",
+    "build-cython-ext",
+    "build-pmars",
+    "cancel-async-tasks",
+    "chess-best-move",
+    "cobol-modernization",
+    "code-from-image",
+    "configure-git-webserver",
+    "constraints-scheduling",
+    "count-dataset-tokens",
+    "crack-7z-hash",
+    "custom-memory-heap-crash",
+    "db-wal-recovery",
+    "dna-assembly",
+    "dna-insert",
+    "extract-elf",
+    "extract-moves-from-video",
+    "feal-differential-cryptanalysis",
+    "feal-linear-cryptanalysis",
+    "filter-js-from-html",
+    "financial-document-processor",
+    "fix-code-vulnerability",
+    "fix-git",
+    "gcode-to-text",
+    "git-leak-recovery",
+    "git-multibranch",
+    "gpt2-codegolf",
+    "headless-terminal",
+    "hf-model-inference",
+    "kv-store-grpc",
+    "large-scale-text-editing",
+    "largest-eigenval",
+    "llm-inference-batching-scheduler",
+    "log-summary-date-ranges",
+    "mailman",
+    "make-doom-for-mips",
+    "make-mips-interpreter",
+    "merge-diff-arc-agi-task",
+    "model-extraction-relu-logits",
+    "modernize-scientific-stack",
+    "mteb-retrieve",
+    "multi-source-data-merger",
+    "nginx-request-logging",
+    "openssl-selfsigned-cert",
+    "overfull-hbox",
+    "password-recovery",
+    "path-tracing",
+    "path-tracing-reverse",
+    "polyglot-c-py",
+    "polyglot-rust-c",
+    "protein-assembly",
+    "prove-plus-comm",
+    "pypi-server",
+    "pytorch-model-cli",
+    "pytorch-model-recovery",
+    "query-optimize",
+    "raman-fitting",
+    "regex-log",
+    "rstan-to-pystan",
+    "sanitize-git-repo",
+    "sparql-university",
+    "sqlite-db-truncate",
+    "sqlite-with-gcov",
+    "torch-pipeline-parallelism",
+    "torch-tensor-parallelism",
+    "vulnerable-secret",
+    "write-compressor"
+  ],
+  "ordered_model_tasks": [
+    "modernize-scientific-stack",
+    "overfull-hbox",
+    "torch-tensor-parallelism",
+    "git-multibranch",
+    "build-pmars",
+    "largest-eigenval",
+    "sparql-university",
+    "make-doom-for-mips",
+    "db-wal-recovery",
+    "nginx-request-logging",
+    "build-cython-ext",
+    "openssl-selfsigned-cert",
+    "hf-model-inference",
+    "polyglot-c-py",
+    "kv-store-grpc",
+    "model-extraction-relu-logits",
+    "pytorch-model-recovery",
+    "regex-log",
+    "multi-source-data-merger",
+    "vulnerable-secret",
+    "count-dataset-tokens",
+    "raman-fitting",
+    "pytorch-model-cli",
+    "sqlite-with-gcov",
+    "fix-git",
+    "cobol-modernization",
+    "merge-diff-arc-agi-task",
+    "polyglot-rust-c",
+    "torch-pipeline-parallelism",
+    "git-leak-recovery",
+    "pypi-server",
+    "extract-elf",
+    "prove-plus-comm",
+    "gcode-to-text",
+    "chess-best-move",
+    "cancel-async-tasks",
+    "sqlite-db-truncate",
+    "write-compressor",
+    "headless-terminal",
+    "log-summary-date-ranges",
+    "password-recovery",
+    "adaptive-rejection-sampler",
+    "configure-git-webserver",
+    "fix-code-vulnerability",
+    "sanitize-git-repo",
+    "gpt2-codegolf",
+    "query-optimize",
+    "code-from-image",
+    "large-scale-text-editing",
+    "constraints-scheduling",
+    "financial-document-processor",
+    "break-filter-js-from-html",
+    "crack-7z-hash",
+    "path-tracing-reverse",
+    "llm-inference-batching-scheduler",
+    "rstan-to-pystan",
+    "custom-memory-heap-crash",
+    "feal-linear-cryptanalysis",
+    "protein-assembly",
+    "path-tracing",
+    "dna-assembly",
+    "filter-js-from-html",
+    "mailman",
+    "feal-differential-cryptanalysis",
+    "extract-moves-from-video",
+    "make-mips-interpreter",
+    "dna-insert",
+    "mteb-retrieve"
+  ],
+  "model_exclusions": [
+    {
+      "task": "mcmc-sampling-stan",
+      "reason": "Preflight: unchanged reference fails (cmake missing for RcppParallel); with cmake installed it still fails because the task's own Stan model uses array syntax that the pinned rstan 2.32.7 stanc rejects. No reference-only repair qualifies the unchanged grader. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-alpine-ssh",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-startup",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "tune-mjcf",
+      "reason": "Preflight: unchanged verifier crashes with Fatal Python error: Illegal instruction while importing the native MuJoCo module under x86 emulation on this Apple Silicon host. Excluded symmetrically before model trials."
+    }
+  ],
+  "hardware": {
+    "cpu": "Apple M4 Pro",
+    "host_ram_gib": 48,
+    "docker_allocated_ram_gib": 16,
+    "docker_cpus": 14,
+    "docker_engine": "29.4.3",
+    "docker_architecture": "aarch64"
+  },
+  "results": [
+    {
+      "task": "adaptive-rejection-sampler",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "break-filter-js-from-html",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "0818668e440283b4798f48939d84bf489eeed29816d0b54fc48a26633c005d0e",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "build-cython-ext",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "5540bf0b258ac65a6c3e73eed98f19836a5804422ecb0d611554fc40bf9b6cdf",
+      "qualified": true,
+      "qualification": "documented_reference_compatibility_validation"
+    },
+    {
+      "task": "build-pmars",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "cb8d633e3c450619d30413fa24a9486de4e58ad0ee6bb383e0068feb7ad4ad97",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "cancel-async-tasks",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "chess-best-move",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "d0fa40531d3516065cdd7fc4e8c40bacf09a9ff766fbd15767fd30e347bb5e93",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "cobol-modernization",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "49bb476595d1857bb36fd1bd3fe927edc9d57668d03821119df5869f92fdd5c8",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "code-from-image",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "configure-git-webserver",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "73ef2c51e0516bdd5196e263f03427568372cafa43bd2722593dd39f33e4c4bd",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "constraints-scheduling",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "30bdb12e2a5f63409f86b2fba8bf9b0b602a7c2021606253c4cb19adddd1ca91",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "count-dataset-tokens",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "crack-7z-hash",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "e86d723c6444eb5546a62eb37501586610d172cc6ab3ab93093b590bbe074e00",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "custom-memory-heap-crash",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "7fc95c8839ba0b11e1fd2c328474bda8c93782db8b8749c50ee4b33889ed3fb1",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "db-wal-recovery",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "4fd8676911a032935d0de4d5140b923000146be928f624d827b009085a66935f",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "dna-assembly",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "dna-insert",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "extract-elf",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "56cfda764b45ce66acf5a26b809dead44d3dda4a8525b71dc486c5661df9ed6d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "extract-moves-from-video",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "2733b810894f0e4d551b9a3d1d9dceada370d49d668e72f743a37fc2a576d543",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "feal-differential-cryptanalysis",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "9123cf5eb67b5615812924f6f89d8f0ee060c8377765e65983eb10b3d2d7ccac",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "feal-linear-cryptanalysis",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "b19b68a296fe783fa4ed876e27cf3ab21bb0954a85e275def9a75b4200c567b7",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "filter-js-from-html",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "b7db461dc2615141dd3cfeef5c098b15ad0e17ad2cc3719f32a07150e8750a8d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "financial-document-processor",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "fix-code-vulnerability",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "3eadaa56eac5004debb29f42e98fa42e44d6d78a6efa3989271fe885a0d1ba02",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "fix-git",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "816709c1570054cbc359889f1603cfb43aeaa63bd150694688353eecf79ba035",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "gcode-to-text",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "git-leak-recovery",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "277fdd330aa9c3b7f396383735741ccee4eb47873b01ac6891027a4abfbc3bf5",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "git-multibranch",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "1e146c4e363d939336e8c05f700c589593409489453b19a87ab2a5e52b135794",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "gpt2-codegolf",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "dea5625398bcf4ce6c120fa97cc30f595530b21499dbb29a9f44519b2c75e2da",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "headless-terminal",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "2b44a1e4616348c5e3e0b1400a8c6aaedc5e0d99794b9611a87407cf301950d9",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "hf-model-inference",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "f2b42e530ff098d3cd4f09a51cd4ba232ddc3d849a31cb7aeeb9e8230b75e006",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "kv-store-grpc",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "large-scale-text-editing",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "dccb54989ba09d677346d0f0bad9fb9f5163b7c02456668b66d66fdcd3395045",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "largest-eigenval",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "0468ea3976e7429884c8d085f7ef49618781a924dd193478791e4bd09a8a432c",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "llm-inference-batching-scheduler",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "log-summary-date-ranges",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "mailman",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "3b36a115adac701e556683caeb6224456e4ace2247136622bf5f14a865cf92a9",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "make-doom-for-mips",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "cab36da379b5730129b70ae04105b39cbcc97d175b63cb2491a0e2a3cc18b4bc",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "make-mips-interpreter",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "9ec865e83273442e8274eda766fa79a45942661223afe4de702c5bdf962a8ff0",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "mcmc-sampling-stan",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "a766c54a86fdb943f004d7573659ee2ae4a813a1364163f7c6cd8a13c3a5ac6f",
+      "qualified": false,
+      "qualification": "excluded_before_model_trials"
+    },
+    {
+      "task": "merge-diff-arc-agi-task",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "model-extraction-relu-logits",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "8279b0fdb158ecdff563842958ff4741debf1a16d38540f58d67d92d542c726b",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "modernize-scientific-stack",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "7326f9563df46a626359a7a813170fd2dea85a6d2c4ebbe48d4cb3abc7c3f9e3",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "mteb-retrieve",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "24a9532387d950bdeb65cb5d41cbf7c06c30c53b721da61a3788db043bd4725f",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "multi-source-data-merger",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "eb2b5bd5aa47e4d9c060d2dae50bbaf27861ab1df080e3e60498250adeb0223e",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "nginx-request-logging",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "e06736ccbea81877e8e7a97cfe7e73a3f86b0866841003097fefa2a775128844",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "openssl-selfsigned-cert",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "overfull-hbox",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "508ec55d7264e55de7c95ccffffa3aed03b7e40b1d17944e07dc62132637630c",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "password-recovery",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "cef1fa92774633240b7207f62a9d3aac7a09c43b581aceb1419da9a1ee9cba36",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "path-tracing",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "cf8712dc462b1ba59a7c8c76c91faff08cecd19add677c5ab974e6b5100aa862",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "path-tracing-reverse",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "08286b0ade10e153f5aef556734c4b0081651566b6d487b51519edab56903c22",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "polyglot-c-py",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "5ca51eb8cda1fedeff669b0a57ae8be2cd72888ffa5a81ffaf485d2e580bc5d4",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "polyglot-rust-c",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "ea4f9758ee5a73ab1e9a961e850f6574abb24524e90652005e434e349532d457",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "protein-assembly",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "20979c2ffaec8604891c457001a76b2e802e36ce623178c601629d49cf08c45a",
+      "qualified": true,
+      "qualification": "documented_reference_compatibility_validation"
+    },
+    {
+      "task": "prove-plus-comm",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "115231d82f51b9d31812e9cdfa501cfc55694a731c48199e628ed0b880777854",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "pypi-server",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "4587fa888618bfbc638a9262d14ad3686f33b09c12d750b328e9f256ab3d8ed2",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "pytorch-model-cli",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "pytorch-model-recovery",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "eb383982feadf1c9eb4186b005cdc90cd408cd45a0ea9571801fc9c74043ba2e",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "qemu-alpine-ssh",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "9f2d9778ab3a208a68154fbb611b9905c58300e1ac2a4641839814c4edc0f7cc",
+      "qualified": false,
+      "qualification": "excluded_before_model_trials"
+    },
+    {
+      "task": "qemu-startup",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "9f2d9778ab3a208a68154fbb611b9905c58300e1ac2a4641839814c4edc0f7cc",
+      "qualified": false,
+      "qualification": "excluded_before_model_trials"
+    },
+    {
+      "task": "query-optimize",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "9324894dcaa6a1fa48d70cd4bc675cfec19c5cfa50bd55eea8302488a1d15d6f",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "raman-fitting",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "regex-log",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "rstan-to-pystan",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "c3882ebd596d6371e70f49194169a5ca5accacb94d2fc80cb46658f89105906e",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "sanitize-git-repo",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "edad4bfb3d8a5b2f0a9703a2be9f9562c9a1c2c36432e4780a2eae48c7c3d106",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "sparql-university",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "sqlite-db-truncate",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "00c8f6629b622a48e0670f9de4b1a1f490047374edf7c4fc0b3f2be41898dbd6",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "sqlite-with-gcov",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "torch-pipeline-parallelism",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "torch-tensor-parallelism",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "34a8be0934681d6c1a433801ddbb4a42a50b834fb18f4d115895401bfd7f173d",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "tune-mjcf",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 0.0,
+      "environment_sha256": "d3b5e73330be07317b4349cc73ed0586a8531b6c0c1e05c7d195e93c0cf3a1c4",
+      "qualified": false,
+      "qualification": "excluded_before_model_trials"
+    },
+    {
+      "task": "vulnerable-secret",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "84e14976e9f222efd6e207497f6f5d56435fcd8d0ea20207e6f7137cb73f7b0a",
+      "qualified": true,
+      "qualification": "stock_reference"
+    },
+    {
+      "task": "write-compressor",
+      "stock_reference_status": "complete",
+      "stock_reference_reward": 1.0,
+      "environment_sha256": "5f0dd2e6e1305a1af9a2f27cb07696ba6fadbfdfc2346b6201c52e9abdc86abb",
+      "qualified": true,
+      "qualification": "stock_reference"
+    }
+  ],
+  "stock_reference_passes": 66,
+  "compatibility_qualified": 2,
+  "host_exclusions": 4
+}

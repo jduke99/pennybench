@@ -29,9 +29,9 @@ Using $1.58 per trial as a provisional planning anchor:
 | Stage or scope | Trials | Approximate API-equivalent cost |
 | --- | ---: | ---: |
 | Initial 10-task paired smoke | 20 | $32 |
-| Selected 72-task study, both arms, once | 144 | $227 |
+| Selected study after four preflight exclusions, both arms, once | 136 | $215 |
 
-A $1–$3-per-trial sensitivity range makes the selected study $144–$432. The
+A $1–$3-per-trial sensitivity range makes the selected study $136–$408. The
 user selected all 72 tasks on 2026-10-19, with subscription authentication and
 ascending published time limits. The 10-task row remains a sizing reference,
 not an additional run or an approval requirement. Retries,

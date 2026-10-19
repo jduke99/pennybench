@@ -23,7 +23,8 @@ These execute supplied solutions, so they do not predict how long Claude Code
 will need to solve the tasks. Most images run under x86 emulation on this Mac.
 Model-run estimates should be updated as the first selected pairs complete.
 
-The selected first study uses 72 tasks (144 trials), with agent/verifier limits
+The resource rule selects 72 candidates; four preflight exclusions leave 68
+model tasks (136 trials). The selected tasks have agent/verifier limits
 at most 30 minutes each and RAM at most 8 GB per task. Its schedule sorts by agent
 timeout, then verifier timeout, retaining a seeded shuffle for ties and alternating
 arm order within adjacent pairs. These are time limits, not expected runtimes.

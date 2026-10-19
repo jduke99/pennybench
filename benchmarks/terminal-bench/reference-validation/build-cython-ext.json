@@ -1,0 +1,28 @@
+{
+  "task": "build-cython-ext",
+  "qualification": "reference_compatibility_validation",
+  "stock_reference_reward": 0.0,
+  "stock_reference_attempts": 2,
+  "stock_reference_failure": "KeyError: 'pos'; planarity 1.0.0 changed graph node attributes",
+  "correction": "reference-only planarity==0.6; not injected into model trials",
+  "supplemental_verifier": {
+    "tests": 11,
+    "passed": 11,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792436994.2495613,
+    "stop": 1792436997.5936692
+  },
+  "qualified": true,
+  "task_sha256": "ce0f89c3805d092ba9ae319a496cbe0c979919738755a2bb5ab72aa6dd7d2312",
+  "verifier_sha256": "9f786a0cdf3537f93753dec948ca1998897e5d5fe5b389336fe77c5baad478b2",
+  "original_solution_sha256": "41bbdde88617070366a70e518eedca466a4ea1acd7e96899b2fb7da988e40abc",
+  "reproduction_script_sha256": "52dc757345056462f720fd5e5a604ec81d67cbc201ba57c39efb17eb196972af",
+  "upstream_issue": "https://github.com/harbor-framework/terminal-bench-2/issues/75",
+  "model_task_environment_modified": false,
+  "model_instructions_modified": false,
+  "grader_modified": false,
+  "verifier_artifact_sha256": "4545c7fd4692a75a646609755bcc1e029d0dc41ea361ee8e1becdb7290679e93"
+}

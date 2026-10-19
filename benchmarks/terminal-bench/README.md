@@ -8,7 +8,7 @@ After installing PennyBench, acquire the exact source (or verify an existing cop
 
 ```sh
 .venv/bin/python benchmarks/terminal-bench/prepare.py
-.venv/bin/pennybench check benchmarks/terminal-bench/experiments/proxy-tb21-bounded72.yaml
+.venv/bin/pennybench check benchmarks/terminal-bench/experiments/proxy-tb21-bounded.yaml
 ```
 
 `prepare.py --verify-only` checks the revision, task-tree hash, and selected task
@@ -31,9 +31,14 @@ The user selected Terminal-Bench 2.1 for this first bounded cost study.
 The [selection rule and task list](scope.json)
 keeps tasks with published agent and verifier limits of at most 30 minutes each,
 and task RAM at most 8 GB. This leaves 72 candidates before oracle exclusions;
-17 longer tasks are outside the initial scope. The selected run covers all 72
-tasks once under each arm (144 trials), using the user's Claude subscription login.
-The [experiment definition](experiments/proxy-tb21-bounded72.yaml) pins the source
+17 longer tasks are outside the initial scope. The selected pool contains 72
+tasks. Two QEMU tasks fail before their VMs boot (Rosetta syscall
+282), tune-mjcf's MuJoCo verifier crashes with an illegal instruction, and
+mcmc-sampling-stan's reference fails even with its missing cmake dependency
+installed (its Stan model uses array syntax the pinned rstan rejects). These
+four are excluded symmetrically before model trials. The model run covers
+68 tasks once under each arm (136 trials), using the user's Claude subscription login.
+The [experiment definition](experiments/proxy-tb21-bounded.yaml) pins the source
 task tree and schedules ascending agent time limits, then verifier limits, with
 seeded ties. Native/proxy trials stay adjacent and their order alternates.
 Results will describe this selected subset, not the entire suite. Reference
@@ -56,7 +61,7 @@ Preflight sequence:
    2026-10-19 to accommodate the selected tasks' unchanged limits of up to 8 GB.
 4. Investigate failures and record any symmetric exclusions with reasons. Do not
    change graders, rewards, or task resource limits to obtain passes.
-5. Finalize and commit the 72-task definition after investigating reference
+5. Finalize and commit the bounded task definition after investigating reference
    failures. Audit the initial completed pairs as a wiring check before continuing.
    A failed reference check or missing RAM is not silently converted to an agent
    failure or removed from the selected task count.
@@ -67,7 +72,7 @@ and logs are saved under `runs/oracle/`.
 
 Initial validation on 2026-10-19: `adaptive-rejection-sampler` completed under
 x86 emulation with reward 1.0 (all nine verifier checks passed), and its package
-inventory was captured successfully. The serial reference pass is in progress;
+inventory was captured successfully. The resource-aware reference pass is in progress;
 this first pass does not establish compatibility for the remaining tasks.
 
 Local progress: `runs/terminal-bench-prep/reference-pass.log`. Tasks that exceed
@@ -79,3 +84,8 @@ using a non-forced removal. It retains the image between the arms of a pair.
 
 Public reproduction instructions and reviewed results will live here as the
 [suite layout](../README.md) is completed.
+
+Reference-only corrections for `build-cython-ext` and `protein-assembly` pass
+their unchanged graders after upstream dependency or public-data drift. The
+[qualification records and reproduction scripts](reference-validation/README.md)
+preserve the original failed verdicts. Neither model arm receives those repairs.

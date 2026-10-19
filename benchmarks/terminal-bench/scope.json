@@ -1,5 +1,5 @@
 {
-  "status": "selected by user; reference preflight pending",
+  "status": "selected by user; reference preflight pending; three machine-specific exclusions recorded before model trials",
   "task_tree_sha256": "03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0",
   "selection_rule": {
     "max_agent_timeout_sec": 1800,
@@ -151,7 +151,25 @@
       "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
     }
   ],
-  "model_task_count": 72,
+  "model_task_count": 68,
   "k": 1,
-  "task_order": "agent_timeout"
+  "task_order": "agent_timeout",
+  "model_exclusions": [
+    {
+      "task": "mcmc-sampling-stan",
+      "reason": "Preflight: unchanged reference fails (cmake missing for RcppParallel); with cmake installed it still fails because the task's own Stan model uses array syntax that the pinned rstan 2.32.7 stanc rejects. No reference-only repair qualifies the unchanged grader. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-alpine-ssh",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-startup",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "tune-mjcf",
+      "reason": "Preflight: unchanged verifier crashes with Fatal Python error: Illegal instruction while importing the native MuJoCo module under x86 emulation on this Apple Silicon host. Excluded symmetrically before model trials."
+    }
+  ]
 }

@@ -1,7 +1,7 @@
-# User-selected Terminal-Bench 2.1 bounded cost study; reference preflight must finish before launch.
-# 72 tasks, 144 trials. This is the full declared subset, not the full upstream suite.
-# Ascending agent timeout, then verifier timeout; seeded tie order. Arm order alternates.
-id: proxy-tb21-bounded72
+# Terminal-Bench 2.1 bounded cost study, registered before model trials.
+# 72 resource-eligible candidates; 4 tasks excluded after failed preflight references: 68 tasks, 136 trials.
+# Reference-only compatibility qualifications are documented in ../reference-validation/.
+id: proxy-tb21-bounded
 arms:
 - cc-sonnet-native-login
 - cc-sonnet-proxy-login
@@ -137,6 +137,23 @@ exclude:
 - task: winning-avg-corewars
   reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
     exceeds initial scope limit 1800
+- task: mcmc-sampling-stan
+  reason: 'Preflight: unchanged reference fails (cmake missing for RcppParallel); with
+    cmake installed it still fails because the task''s own Stan model uses array syntax
+    that the pinned rstan 2.32.7 stanc rejects. No reference-only repair qualifies the
+    unchanged grader. Excluded symmetrically before model trials.'
+- task: qemu-alpine-ssh
+  reason: 'Preflight: reference QEMU process fails with Rosetta unimplemented syscall
+    282 on this Apple Silicon Docker host; verifier also encounters stale Debian package
+    URLs. Excluded symmetrically before model trials.'
+- task: qemu-startup
+  reason: 'Preflight: reference QEMU process fails with Rosetta unimplemented syscall
+    282 on this Apple Silicon Docker host; verifier also encounters stale Debian package
+    URLs. Excluded symmetrically before model trials.'
+- task: tune-mjcf
+  reason: 'Preflight: unchanged verifier crashes with Fatal Python error: Illegal
+    instruction while importing the native MuJoCo module under x86 emulation on this
+    Apple Silicon host. Excluded symmetrically before model trials.'
 stage: full
 k: 1
 seed: 20261019

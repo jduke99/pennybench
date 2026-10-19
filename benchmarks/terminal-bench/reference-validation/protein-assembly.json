@@ -1,0 +1,27 @@
+{
+  "task": "protein-assembly",
+  "qualification": "reference_compatibility_validation",
+  "stock_reference_reward": 0.0,
+  "stock_reference_attempts": 2,
+  "stock_reference_failure": "Reference parser uses missing PDB modified_monomer features; unresolved chromophore X causes translation constraint failure",
+  "correction": "Reference-only parser expands parenthesized PDB chemical components via public chemcomp one_letter_code or parent residues; not injected into model trials",
+  "supplemental_verifier": {
+    "tests": 1,
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "pending": 0,
+    "other": 0,
+    "start": 1792438538.242966,
+    "stop": 1792438538.3136642
+  },
+  "qualified": true,
+  "task_sha256": "d6e5fd118b576c119748ce4848b8e5b7cb70835adcad3393b7853dd9e64e70a3",
+  "verifier_sha256": "818feb02cc8f000d408d8b996b0c848fb7ce5f82872d7ebc4e78ac948752ccb7",
+  "original_solution_sha256": "0a6622bc3d0342f95cdd838eb61a965a896c5f2cdb9b98e0410465b50fa15502",
+  "reproduction_script_sha256": "e330f7e480fa570e38bf072f049c6b789bd8304fe65d343c846663fbc6a25951",
+  "verifier_artifact_sha256": "0246dcfb8c74fa4795f235c52c553aafcc8ed0697364b7554cdd83860a3d2492",
+  "model_task_environment_modified": false,
+  "model_instructions_modified": false,
+  "grader_modified": false
+}
