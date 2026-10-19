@@ -109,5 +109,11 @@ finished pairs from a longer plan; these retain the runner's provenance labels.
 `runs/`, `.env`, personal configuration, downloaded task sets and caches stay private.
 Only reviewed results should be published. 
 
+## Acknowledgments
+
+This work was inspired by and adapted from the evaluation series conducted by Denis Shiryaev at JetBrains covering [Caveman](https://blog.jetbrains.com/ai/2026/07/speak-to-ai-agents-like-cavemen-tosave-tokens/), [RTK](https://blog.jetbrains.com/ai/2026/07/rtk-claude-code-token-savings/), and [Ponytail](https://blog.jetbrains.com/ai/2026/07/ponytail-skill-claude-tested/).
+
+## License
+
 PennyBench is released under the [Apache License 2.0](LICENSE). Third-party components
 keep their own licenses; see [THIRD_PARTY.md](THIRD_PARTY.md).
