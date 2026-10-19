@@ -11,6 +11,10 @@ Apache-2.0 (see `LICENSE`). The components below keep their own licenses.
 | mitmproxy, numpy, scipy, PyYAML | See each project | Not included. Installed as dependencies. |
 | Claude Code | Anthropic terms | Not included. Installed into task containers under the user's own account. |
 
+SkillsBench is described in Li et al., "SkillsBench: Benchmarking How Well Agent Skills
+Work Across Diverse Tasks" ([arXiv:2602.12670](https://arxiv.org/abs/2602.12670)); a BibTeX
+entry is in [benchmarks/skillsbench/README.md](benchmarks/skillsbench/README.md).
+
 ## SkillsBench task skills
 
 Individual task skills inside the dataset have their own terms. Roughly 30 of 232 are

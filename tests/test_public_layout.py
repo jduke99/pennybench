@@ -54,8 +54,7 @@ def test_pricing_table_is_declared_as_package_data():
 def test_public_documentation_relative_links_resolve():
     paths = ["README.md", "RUNNER.md", "CONTRIBUTING.md", "SECURITY.md",
              "docs/CREDENTIALS.md", "docs/PUBLICATION.md", "benchmarks/README.md",
-             "benchmarks/skillsbench/README.md", "benchmarks/skillsbench/results/README.md",
-             "benchmarks/terminal-bench/HOW_TO_RUN.md"]
+             "benchmarks/skillsbench/README.md", "benchmarks/skillsbench/results/README.md"]
     for name in paths:
         path = ROOT / name
         for target in re.findall(r"\]\(([^)]+)\)", path.read_text()):

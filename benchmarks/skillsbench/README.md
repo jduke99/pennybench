@@ -6,7 +6,7 @@ summed cost was 30.1% lower. Official rewards were higher on 6 projects, lower o
 and equal on 47. The methodology documents the 2 environment omissions and 1
 incomplete pair; they remain visible in the task register.
 
-- [HTML report](../../output/skillsbench-60/index.html)
+- [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/)
 - [PDF report](../../output/pdf/pennybench-skillsbench-60.pdf)
 - [Markdown report](../../REPORT.md)
 - [Results and publication status](results/README.md)
@@ -69,6 +69,24 @@ the 232 bundled skills (Anthropic's docx, pdf, pptx and xlsx skills, among other
 proprietary and must not be copied or redistributed. This repository ships no dataset
 files; `prepare.py` downloads them into the ignored `runs/` directory. Do not commit
 `runs/`, task directories or raw trial artifacts. See [THIRD_PARTY.md](../../THIRD_PARTY.md).
+
+## Citing SkillsBench
+
+PennyBench evaluates the SkillsBench tasks; it is not affiliated with their authors.
+If you use the dataset, cite the SkillsBench paper
+([arXiv:2602.12670](https://arxiv.org/abs/2602.12670)):
+
+```bibtex
+@misc{skillsbench_2026,
+  title={SkillsBench: Benchmarking How Well Agent Skills Work Across Diverse Tasks},
+  author={Xiangyi Li and Wenbo Chen and Yimin Liu and Shenghan Zheng and Xiaokun Chen and Yifeng He and Yubo Li and Bingran You and Haotian Shen and Han-chung Lee},
+  year={2026},
+  eprint={2602.12670},
+  archivePrefix={arXiv},
+  primaryClass={cs.AI},
+  url={https://arxiv.org/abs/2602.12670}
+}
+```
 
 ## Historical paths
 

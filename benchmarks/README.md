@@ -6,7 +6,7 @@ definitions, compatibility notes, and results documentation. No suite forks the 
 | Suite | Entry point |
 | --- | --- |
 | SkillsBench | [60-task report, provenance and reproduction](skillsbench/README.md) |
-| Terminal-Bench 2.1 | [Reproduction guide](terminal-bench/HOW_TO_RUN.md) and [current study](terminal-bench/README.md) |
+| Terminal-Bench 2.1 | In progress; not part of this release |
 
 ```text
 pennybench/                    shared runner, capture, audit, metrics and statistics
@@ -19,7 +19,7 @@ benchmarks/
     prepare.py
     experiments/               suite-specific experiment definitions
     results/                   reviewed-result index
-  terminal-bench/
+  terminal-bench/              in progress, not part of this release
     README.md
     HOW_TO_RUN.md
     source.toml

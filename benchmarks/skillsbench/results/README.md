@@ -4,7 +4,7 @@ Published data for the PennyRouter evaluation: `cc-sonnet-native-login` (baselin
 `cc-sonnet-proxy-login` (hosted PennyRouter), both Claude Code 2.1.302, Sonnet 5.5, medium
 effort, signed-in Claude subscription, per-trial cache isolation.
 
-The [HTML](../../../output/skillsbench-60/index.html),
+The [HTML](https://jduke99.github.io/pennybench/skillsbench-60/),
 [PDF](../../../output/pdf/pennybench-skillsbench-60.pdf) and
 [Markdown](../../../REPORT.md) reports present the findings. The run's audit is labelled
 `partial` because the planned 72-project experiment was stopped after the first 60

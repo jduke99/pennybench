@@ -10,8 +10,8 @@ documentation live under [benchmarks/](benchmarks/README.md).
 
 | Suite | Start here |
 | --- | --- |
-| SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) |
-| Terminal-Bench 2.1 | [Setup and reproduction](benchmarks/terminal-bench/HOW_TO_RUN.md) |
+| SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) · [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/) |
+| Terminal-Bench 2.1 | In progress; not part of this release |
 
 ## Install
 
@@ -71,8 +71,6 @@ Follow the suite-specific instructions before launching model trials:
 
 - [SkillsBench](benchmarks/skillsbench/README.md): registry download, pinned task
   hash, task-local skills, and historical exclusions.
-- [Terminal-Bench](benchmarks/terminal-bench/HOW_TO_RUN.md): pinned source download,
-  resource selection, image architecture, reference checks, and experiment scope.
 
 Reference checks use the supplied solutions, not an LLM. Model trials consume your
 subscription or API usage. Do not launch multiple runs sharing the same artifact
