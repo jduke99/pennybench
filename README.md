@@ -15,11 +15,10 @@ documentation live under [benchmarks/](benchmarks/README.md).
 
 ## Install
 
-Work from a clone of this repository. Requirements: Python 3.12, uv, Docker, and
-Claude Code and the PennyRouter CLI (`penny`) for the signed-in subscription workflow.
-Use your own PennyRouter account and its normal onboarding. No local PennyRouter gateway
-is required. Task containers and their dependencies may be substantial; consult the
-suite's architecture, RAM and timing notes before starting.
+Work from a clone of this repository. Requirements: Python 3.12, uv, Docker, Claude Code,
+and the PennyRouter CLI (`penny`). You also need a Claude account and a free PennyRouter
+account. Task containers and their dependencies may be substantial; consult the suite's
+architecture, RAM and timing notes before starting.
 
 ```sh
 uv venv .venv --python 3.12
@@ -28,10 +27,8 @@ cp config.example.toml pennybench.local.toml
 .venv/bin/python -m pytest tests -q
 ```
 
-`pennybench.local.toml` means **your private runner settings**, not a local gateway.
-The example targets `https://api.pennyrouter.com`. To evaluate a private server,
-change `[endpoints.proxy].base_url` to its HTTPS endpoint reachable from Docker.
-Do not commit your personal configuration.
+The example config targets `https://api.pennyrouter.com`. For a private PennyRouter server,
+follow the instructions in `pennybench.local.toml`.
 
 ## Use your own subscription
 
