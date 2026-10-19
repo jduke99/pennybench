@@ -313,29 +313,15 @@ linked account from the login. With a token profile it sends the token as the be
 proxy key as `x-api-key`, which a proxy treats as a signed-out client. To point the same arms at a hosted proxy, change `base_url` only.
 Start and stop the proxy yourself; PennyBench never does.
 
-### Counting the proxy's own calls (egress capture)
+For these benchmark runs, disable expiry pre-summary generation in the **gateway's**
+environment before starting it:
 
-A proxy can make upstream calls of its own (keepalive pings, compaction, retries) that the agent
-never sees, so the agent-side capture alone can understate its cost. To count them, run a
-proxy instance dedicated to benchmarking whose upstream traffic goes through PennyBench:
-
-```toml
-# pennybench.local.toml
-[endpoints.proxy]
-base_url = "http://host.docker.internal:8401"   # the benchmark-only proxy instance
-egress_capture_port = 18999
+```sh
+PENNYROUTER_EXPIRY_PRESUMMARY_ENABLED=false
 ```
 
-Start that instance with `HTTPS_PROXY=http://127.0.0.1:18999`,
-`SSL_CERT_FILE=<store>/.mitmproxy/mitmproxy-ca-cert.pem`, and `NO_PROXY=localhost,127.0.0.1`
-(Python `httpx` and most HTTP clients honor these). Do not point an everyday proxy at it: while
-no run is active nothing listens on that port, and its upstream calls fail.
-
-During a run PennyBench captures that port. The experiment must use `cache_isolation: trial`:
-calls carrying a trial's isolation line are that trial's, and what they cost beyond the agent's
-own calls is reported as `gateway_overhead_cost`, with `cost_all_in` adding it to `cost`. Calls
-that carry no trial's line (for example compaction shared across sessions) are reported as one
-run-level line. The `egress` audit check fails any proxy trial whose calls are missing upstream.
+Set this on the gateway process (or in its `.env`), not in the agent's endpoint `env` table.
+The gateway reads the setting at startup.
 
 ## Where things are saved
 
