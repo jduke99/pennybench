@@ -50,9 +50,11 @@ that arm and never reaches the endpoint or the task container. The native arm se
 Anthropic key directly. Without `key_env`, the proxy arm sends your Anthropic key to the
 endpoint, which suits a private server that accepts it but not hosted PennyRouter.
 
-Status: the runner behavior is implemented and unit-tested. A real hosted run has not yet
-confirmed that PennyRouter uses the stored key for this account (see
-[API_KEY_PLAN.md](API_KEY_PLAN.md)), so treat this workflow as experimental.
+Status: the runner behavior is implemented, unit-tested and exercised by a one-pair hosted
+smoke in which the proxy arm authenticated with only the PennyRouter key. Confirmation
+from gateway records that PennyRouter used the stored Anthropic key, and a clean-checkout
+run with another account, are still open (see [API_KEY_PLAN.md](API_KEY_PLAN.md)), so treat
+this workflow as experimental.
 
 Change both arms' auth profile together when designing an API-key experiment; the
 one-variable check rejects an accidental route-plus-auth change. Keep subscription

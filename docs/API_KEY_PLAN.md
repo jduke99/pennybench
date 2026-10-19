@@ -39,9 +39,12 @@ collision.
 2. **Audit: covered structurally.** The proxy arm's environment never contains the
    provider key, and `secret_leaks` scans artifacts for the endpoint key. No separate
    wire audit was added.
-3. **Verify: open.** Run a one-task smoke on a clean checkout with a separate account
-   that has an Anthropic key connected at pennyrouter.com/keys, and confirm the gateway
-   used that key and charged nothing else.
+3. **Verify: client side done, gateway side open.** A one-pair smoke (2026-10-19, Haiku,
+   fizzbuzz, isolated root) completed with both arms at reward 1.0 and a passing audit.
+   The native arm sent only the Anthropic key, only to `api.anthropic.com`; the proxy arm
+   sent only the `pr-` key, only to `api.pennyrouter.com`, and received 200s. Still to
+   confirm from gateway records: that PennyRouter used the account's stored Anthropic
+   key for those requests. Also repeat on a clean checkout with a different user's account.
 4. **Docs: partly done.** `docs/CREDENTIALS.md` describes the flow as experimental. After
    step 3, add the install/keys steps to the README quick start and drop the
    "experimental" label. Label API-key and subscription results separately.
