@@ -7,7 +7,6 @@ per-task paired effects on cost, tokens, code written, time, and verified task q
 
 Suite documentation lives under [benchmarks/](benchmarks/README.md):
 [SkillsBench](benchmarks/skillsbench/README.md) retains the stopped 60-task evaluation.
-Terminal-Bench 2.1 is in progress and not part of this release.
 
 The method follows JetBrains' token-saver series ([ponytail, part 3][ponytail]).
 [DESIGN.md](DESIGN.md) explains the architecture and the reasoning behind each rule.

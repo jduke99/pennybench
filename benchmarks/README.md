@@ -6,7 +6,6 @@ definitions, compatibility notes, and results documentation. No suite forks the 
 | Suite | Entry point |
 | --- | --- |
 | SkillsBench | [60-task report, provenance and reproduction](skillsbench/README.md) |
-| Terminal-Bench 2.1 | In progress; not part of this release |
 
 ```text
 pennybench/                    shared runner, capture, audit, metrics and statistics
@@ -19,12 +18,6 @@ benchmarks/
     prepare.py
     experiments/               suite-specific experiment definitions
     results/                   reviewed-result index
-  terminal-bench/              in progress, not part of this release
-    README.md
-    HOW_TO_RUN.md
-    source.toml
-    prepare.py
-    experiments/
 tests/                         shared runner and packaging tests
 runs/                          ignored private evidence, downloaded tasks and caches
 ```
@@ -34,8 +27,7 @@ runs/                          ignored private evidence, downloaded tasks and ca
 Historical files under root `experiments/`, `REPORT.md` and `output/` retain their
 paths. Saved manifests and active jobs must continue to work. SkillsBench's suite
 copies initially preserve the original experiment bytes and names; suite docs use
-the new paths. Terminal-Bench's live definitions are managed separately and are not
-moved by this packaging increment.
+the new paths.
 
 The checked-in configuration example uses hosted PennyRouter. A custom HTTPS
 endpoint can be configured for a private server. Each reader supplies their own

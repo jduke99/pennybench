@@ -8,13 +8,12 @@ to publish, push, change visibility, rewrite history, or stop running jobs.
 - [x] Hosted-first quick start and example endpoint: `https://api.pennyrouter.com`.
 - [x] Explain personal subscriptions, token profiles, API-key limitations and custom servers.
 - [x] Keep one shared runner and introduce suite-specific SkillsBench config copies.
-- [x] Preserve historical experiment/report paths and active Terminal-Bench files.
+- [x] Preserve historical experiment/report paths.
 - [x] Add SkillsBench provenance and source verification without running tasks.
 - [x] Keep pricing JSON in distributable runner packages.
 
 ## Before release
 
-- [ ] Finish and review the Terminal-Bench study in the separate evaluation workflow.
 - [ ] Verify subscription onboarding on a clean checkout with a separate user's own account.
 - [ ] Hosted API-key evaluation: runner and gateway behavior verified; repeat once on a clean checkout with another account (`docs/API_KEY_PLAN.md` step 3), then drop the experimental label.
 - [x] Repository license (Apache-2.0, copyright Jon Duke) and security contact (jon@pennyrouter.com).
@@ -29,6 +28,5 @@ to publish, push, change visibility, rewrite history, or stop running jobs.
 - [ ] Review the final diff and commit preparation changes with approval.
 - [ ] Approve publication separately; do not include private `runs/` artifacts in the release.
 
-The current root `experiments/` remains a historical compatibility path. No live
-Terminal-Bench source, active configuration, run lock, process or container is moved by
-this increment. The real private `pennybench.local.toml` and `.env` are not rewritten.
+The current root `experiments/` remains a historical compatibility path. The real private
+`pennybench.local.toml` and `.env` are not rewritten.

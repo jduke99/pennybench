@@ -11,7 +11,6 @@ documentation live under [benchmarks/](benchmarks/README.md).
 | Suite | Start here |
 | --- | --- |
 | SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) · [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/) |
-| Terminal-Bench 2.1 | In progress; not part of this release |
 
 ## Install
 
