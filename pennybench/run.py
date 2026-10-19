@@ -26,8 +26,28 @@ from pennybench.spec import Arm, Experiment, task_skill_dirs
 # Statuses that end a trial for good; anything else is retried on resume.
 FINAL_STATUSES = ("complete", "agent_error")
 
+# Exceptions that say nothing about the agent or the setup: the subscription's usage window
+# was exhausted, or a transient API limit hit. Such a trial is rerun on resume, not scored.
+RETRYABLE_EXCEPTIONS = ("ApiRateLimitError",)
+RATE_LIMIT_MARKERS = ("hit your session limit", "hit your usage limit", "rate_limit_error",
+                      '"api_error_status":429')
+
+
+def hit_usage_limit(trial_dir: Path) -> bool:
+    """A trial the usage limit ended: Claude Code's own output says so (Harbor reports the
+    same failure as ApiRateLimitError or as a non-zero exit, depending on timing)."""
+    for log in trial_dir.glob("harbor/*/*/agent/claude-code.txt"):
+        tail = log.read_text(errors="replace")[-6000:]
+        if any(marker in tail for marker in RATE_LIMIT_MARKERS):
+            return True
+    return False
+
 
 class RunError(RuntimeError):
+    pass
+
+
+class UsageLimitError(RunError):
     pass
 
 
@@ -161,11 +181,17 @@ def check_resumable(run_dir: Path, experiment: Experiment) -> dict:
     manifest = json.loads((run_dir / "run.json").read_text())
     if manifest["experiment_sha256"] != file_sha256(experiment.source):
         raise RunError("experiment file changed since this run started")
-    git = git_state(experiment.root)
-    if git.sha != manifest["git_sha"]:
-        raise RunError(f"HEAD is {git.sha[:8]} but the run started at {manifest['git_sha'][:8]}")
     if [t.to_json() for t in plan_trials(experiment)] != manifest["plan"]:
         raise RunError("trial plan differs from the recorded plan")
+    # The experiment file, arms, tasks, and plan are what define the measurement, and they are
+    # enforced above and below. A different commit (for example a runner fix) is allowed only
+    # when it is a clean tree, and is recorded in the run so the report can show it.
+    git = git_state(experiment.root)
+    if git.dirty:
+        raise RunError("resume from a clean, committed tree")
+    if git.sha != manifest["git_sha"]:
+        manifest.setdefault("resumed_at_commits", []).append(git.sha)
+        (run_dir / "run.json").write_text(json.dumps(manifest, indent=2) + "\n")
     return manifest
 
 
@@ -223,7 +249,9 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     record = {
         **trial.to_json(),
         "arm": arm.id,
-        "status": "secret_leak" if leaks else outcome.status,
+        "status": ("secret_leak" if leaks else
+                   "usage_limit" if outcome.status == "agent_error" and hit_usage_limit(trial_dir)
+                   else outcome.status),
         "started_at": started,
         "finished_at": _now(),
         "runner_wall_clock_s": round(wall, 3),
@@ -296,7 +324,14 @@ def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
     try:
         for trial in pending:
             on_trial(trial, None)
-            on_trial(trial, run_trial(trial, experiment, config, environ, run_dir))
+            record = run_trial(trial, experiment, config, environ, run_dir)
+            on_trial(trial, record)
+            if record["status"] == "usage_limit":
+                # Every further trial would fail the same way and burn the window. Stop with
+                # the run resumable: this trial is not final, so --resume reruns it.
+                raise UsageLimitError(
+                    f"subscription usage limit hit at {trial.trial_id}; resume with "
+                    f"`pennybench run <experiment> --resume {run_dir}` after the window resets")
             # Both trials of a pair share the task image, so the cache is trimmed between pairs.
             if config.builder and trial.position == 1:
                 config.builder.enforce_cap()

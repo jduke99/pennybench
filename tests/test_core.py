@@ -361,3 +361,16 @@ def test_include_limits_the_task_set_and_must_name_real_tasks(tmp_path):
     assert [p.name for p in exp.task_dirs()] == ["t2"]
     with pytest.raises(SpecError, match="unknown tasks"):
         load_experiment(write_experiment(tmp_path, ["a", "b"], "route", include=["nope"]), tmp_path)
+
+
+# Usage limits
+
+def test_usage_limit_is_detected_from_claude_codes_own_output(tmp_path):
+    from pennybench.run import FINAL_STATUSES, hit_usage_limit
+    log = tmp_path / "harbor" / "job" / "trial" / "agent"
+    log.mkdir(parents=True)
+    (log / "claude-code.txt").write_text('...{"result":"You\'ve hit your session limit · resets 12:40am (UTC)"}')
+    assert hit_usage_limit(tmp_path)
+    (log / "claude-code.txt").write_text("normal output, task failed for its own reasons")
+    assert not hit_usage_limit(tmp_path)
+    assert "usage_limit" not in FINAL_STATUSES
