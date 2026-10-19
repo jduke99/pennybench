@@ -7,10 +7,11 @@ from pathlib import Path
 
 from pennybench.audit import write_audit
 from pennybench.metrics import METRICS, run_metrics, unattributed_egress
+from pennybench.solo import format_solo, solo_summary
 from pennybench.stats import compute_stats
 
 
-def build_report(run_dir: Path, partial: bool = False) -> dict:
+def build_report(run_dir: Path, partial: bool = False, reference: Path | None = None) -> dict:
     audit_passed, audit_path = write_audit(run_dir, partial)
     report = {"run_dir": str(run_dir), "audit_passed": audit_passed, "audit": str(audit_path)}
     if not audit_passed:
@@ -18,6 +19,13 @@ def build_report(run_dir: Path, partial: bool = False) -> dict:
     manifest = json.loads((run_dir / "run.json").read_text())
     trials = run_metrics(run_dir)
     (run_dir / "metrics.json").write_text(json.dumps(trials, indent=2) + "\n")
+    if len(manifest["arms"]) == 1:
+        (role, arm), = manifest["arms"].items()
+        summary = solo_summary(trials, run_metrics(reference) if reference else None)
+        (run_dir / "solo.json").write_text(json.dumps(summary, indent=2) + "\n")
+        report["solo"] = {"summary": summary, "experiment": manifest["experiment"],
+                          "stage": manifest["stage"], "arm": arm["id"]}
+        return report
     stats = compute_stats(manifest, trials, audit_passed, partial)
     stats["unattributed_egress"] = unattributed_egress(run_dir)
     (run_dir / "stats.json").write_text(json.dumps(stats, indent=2) + "\n")
@@ -36,6 +44,9 @@ def _fmt_p(value: float | None) -> str:
 def format_report(report: dict) -> str:
     if not report["audit_passed"]:
         return f"audit FAILED; no stats computed. See {report['audit']}"
+    if "solo" in report:
+        solo = report["solo"]
+        return format_solo(solo["summary"], solo["experiment"], solo["stage"], solo["arm"])
     stats = report["stats"]
     lines = [f"{stats['experiment']}  stage={stats['stage']}  tasks={stats['n_tasks']}"]
     if stats["claim"]:

@@ -148,6 +148,27 @@ git commit -am "Pre-register ponytail stages"
 Do not edit an experiment after its run starts. `--resume` refuses if the experiment file,
 the commit, or the trial plan has changed.
 
+### Running one arm alone (debugging and investigation)
+
+List a single arm and omit `variable`:
+
+```yaml
+id: proxy-failed-recheck
+arms: [cc-sonnet-proxy-login]      # one arm: no pairing, no comparison
+include: [task-a, task-b]          # optional: run only these tasks
+k: 3
+```
+
+Each task run is one trial. The audit still checks route, pins, task skills, cache isolation,
+and the rest; there is no pairing check. `pennybench report <run>` prints what the arm did per
+task (rewards per rep, mean cost, cache writes, turns) and is never a claim. To see a baseline
+beside it, pass an earlier run: `pennybench report <run> --reference <paired run dir>` shows
+that run's baseline arm for the same tasks. A single arm cannot answer "is it better than the
+baseline", so use it to understand a result, then confirm with a paired experiment.
+
+Only one run can be active per artifact store (a lock file in the store); a second `run` is
+refused until the first ends.
+
 ### Long runs: limits and resuming
 
 ```sh
@@ -156,7 +177,11 @@ the commit, or the trial plan has changed.
 ```
 
 `--limit` counts whole pairs, so a stopped run never leaves one arm ahead of the other.
-`--resume` skips finished trials and retries unfinished ones.
+`--resume` skips finished trials and retries unfinished ones. A subscription usage limit stops
+the run at the first affected trial (status `usage_limit`, never scored): resume with the same
+command after the limit's reset time, which Claude Code's own message gives. Resuming from a
+later commit is allowed when the tree is clean and the experiment file and trial plan are
+unchanged; the commits are recorded under `resumed_at_commits` in `run.json`.
 
 ## Reading the results
 
@@ -316,9 +341,9 @@ check every number.
 
 ## Known gaps
 
-- **Rate limits.** Nothing yet pauses for a subscription's usage window. A trial that runs
-  out of retries against the limit should end as an agent error, and its pair is dropped. Watch the first stages and keep
-  `--limit` batches small on a single subscription.
+- **Rate limits.** A usage limit stops the run for you to resume after the reset; the runner
+  does not wait for the window itself. A full 144-trial run takes several windows on one
+  subscription.
 - **Lines of code** are counted from what the agent wrote through its tools, not from a final
   workspace diff, so a line rewritten twice counts twice. Subagent calls go through the same
   capture, so their writes count; files a script writes at runtime are not seen, in either

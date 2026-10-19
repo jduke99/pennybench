@@ -138,7 +138,7 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
     checks.append(_check("pins", pin_fail, "harness version and model match the arm specs"))
 
     adoption_fail = []
-    for role in ("baseline", "treatment"):
+    for role in arms:
         marker = arms[role].get("adoption_marker")
         if not marker:
             continue
@@ -199,9 +199,10 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
     for e in final:
         by_pair.setdefault((e.task, e.rep), set()).add(e.role)
     sym_fail += [f"{t} r{r}: only {sorted(roles)} finished" for (t, r), roles in by_pair.items()
-                 if roles != {"baseline", "treatment"}]
+                 if roles != set(arms)]
     checks.append(_check("pairing", sym_fail,
-                         "every finished pair has both arms; excluded tasks never ran"))
+                         "every finished pair has both arms (a single-arm run has one trial per "
+                         "task run); excluded tasks never ran"))
     return checks
 
 

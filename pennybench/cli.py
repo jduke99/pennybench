@@ -51,14 +51,16 @@ def cmd_check(args) -> int:
     _, config, experiment, environ = _load(args)
     trials = plan_trials(experiment)
     print(f"experiment  {experiment.id}  (stage {experiment.stage}, k={experiment.k})")
-    print(f"variable    {experiment.variable}")
-    for role, arm in (("baseline", experiment.baseline), ("treatment", experiment.treatment)):
+    print(f"variable    {experiment.variable}" if experiment.paired
+          else "single arm  (no pairing, no comparison)")
+    for role, arm in experiment.arms.items():
         trial_env = build_trial_env(arm, config, environ)
         print(f"{role:<11} {arm.id}: {arm.route}, auth {arm.auth}, "
               f"agent env {sorted(trial_env.agent_env)}")
     tasks = experiment.task_dirs()
+    units = "pairs" if experiment.paired else "task runs"
     print(f"tasks       {len(tasks)} ({len(experiment.exclude)} excluded), "
-          f"{len(trials) // 2} pairs, {len(trials)} trials")
+          f"{len(trials) // len(experiment.arms)} {units}, {len(trials)} trials")
     return 0
 
 
@@ -94,7 +96,8 @@ def cmd_audit(args) -> int:
 
 
 def cmd_report(args) -> int:
-    report = build_report(Path(args.run_dir).resolve(), args.partial)
+    report = build_report(Path(args.run_dir).resolve(), args.partial,
+                          Path(args.reference).resolve() if args.reference else None)
     print(format_report(report))
     return 0 if report["audit_passed"] else 1
 
@@ -152,6 +155,8 @@ def main(argv: list[str] | None = None) -> int:
 
     report = sub.add_parser("report", help="audit, then compute metrics and paired stats")
     report.add_argument("run_dir")
+    report.add_argument("--reference", metavar="RUN_DIR",
+                        help="single-arm runs: show this run's baseline arm beside each task")
     report.add_argument("--partial", action="store_true",
                         help="accept a run stopped before its plan finished (never a claim)")
     report.set_defaults(func=cmd_report)

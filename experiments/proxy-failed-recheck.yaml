@@ -1,0 +1,19 @@
+# Penny alone, 3 reps, on the four tasks where it failed and native passed in proxy-full
+# (threejs-structure-parser, shock-analysis-supply, exceltable-in-ppt, grid-dispatch-operator).
+# Is each a repeatable Penny failure or a one-off? One arm, so no pairing and no claim: compare
+# with `pennybench report <run> --reference <proxy-full run dir>` (native's earlier results).
+id: proxy-failed-recheck
+arms: [cc-sonnet-proxy-login]
+tasks:
+  dataset: benchflow/skillsbench@v1.1
+  sha256: ef264365bf7b0efd05b7c270a668e08f545779b597a2aedc6711ce2674abea0d
+task_skills: with
+cache_isolation: trial
+include: [threejs-structure-parser, shock-analysis-supply, exceltable-in-ppt, grid-dispatch-operator]
+exclude: []
+stage: smoke-k3
+k: 3
+seed: 20261018
+endpoints:
+  primary: [reward]
+  secondary: [cost, total_tokens, cache_write_tokens, output_tokens, turns]

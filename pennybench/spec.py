@@ -71,9 +71,9 @@ class Exclusion:
 @dataclass(frozen=True)
 class Experiment:
     id: str
-    baseline: Arm
-    treatment: Arm
-    variable: str
+    # Arms by role: "baseline" and "treatment" for a paired experiment, or one "solo" arm.
+    arms: dict[str, Arm]
+    variable: str | None
     tasks: Path
     tasks_source: dict[str, str]
     include: tuple[str, ...]
@@ -88,6 +88,22 @@ class Experiment:
     quality: dict[str, Any]
     source: Path
     root: Path
+
+    @property
+    def paired(self) -> bool:
+        return len(self.arms) == 2
+
+    @property
+    def roles(self) -> tuple[str, ...]:
+        return tuple(self.arms)
+
+    @property
+    def baseline(self) -> Arm | None:
+        return self.arms.get("baseline")
+
+    @property
+    def treatment(self) -> Arm | None:
+        return self.arms.get("treatment")
 
     def task_dirs(self) -> list[Path]:
         """Harbor task directories in the task set, minus exclusions, in name order."""
@@ -209,13 +225,19 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
                     dataset_store: Path | None = None) -> Experiment:
     raw = yaml.safe_load(path.read_text()) or {}
     arm_ids = _require(raw, "arms", path)
-    if not isinstance(arm_ids, list) or len(arm_ids) != 2:
-        raise SpecError(f"{path}: arms must list exactly [baseline, treatment]")
+    if not isinstance(arm_ids, list) or len(arm_ids) not in (1, 2):
+        raise SpecError(f"{path}: arms must list [baseline, treatment], or one arm to run alone")
     arm_dirs = [root / "arms", *extra_arm_dirs]
-    baseline, treatment = (find_arm(a, arm_dirs) for a in arm_ids)
-
-    variable = _require(raw, "variable", path)
-    check_one_variable(baseline, treatment, variable, root)
+    found = [find_arm(a, arm_dirs) for a in arm_ids]
+    if len(found) == 2:
+        arms = {"baseline": found[0], "treatment": found[1]}
+        variable = _require(raw, "variable", path)
+        check_one_variable(found[0], found[1], variable, root)
+    else:
+        # One arm run alone, for debugging and investigation: no pairing, no comparison.
+        if raw.get("variable"):
+            raise SpecError(f"{path}: a single-arm experiment compares nothing, so it has no variable")
+        arms, variable = {"solo": found[0]}, None
 
     stage = _require(raw, "stage", path)
     if stage not in STAGES:
@@ -250,8 +272,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
 
     experiment = Experiment(
         id=_require(raw, "id", path),
-        baseline=baseline,
-        treatment=treatment,
+        arms=arms,
         variable=variable,
         tasks=tasks,
         tasks_source=tasks_source,

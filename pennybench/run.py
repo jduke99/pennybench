@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import subprocess
 import time
 from dataclasses import dataclass
@@ -94,9 +95,8 @@ def _arm_record(arm: Arm, config: LocalConfig, root: Path) -> dict:
 
 
 def experiment_capture_hosts(experiment: Experiment, config: LocalConfig) -> list[str]:
-    arms = (experiment.baseline, experiment.treatment)
     return capture_hosts([config.endpoint(a.endpoint_name).base_url
-                          for a in arms if a.endpoint_name])
+                          for a in experiment.arms.values() if a.endpoint_name])
 
 
 def agent_cache_root(config: LocalConfig) -> Path:
@@ -129,7 +129,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
     if config.builder:
         config.builder.ensure()
     builds = {}
-    for arm in (experiment.baseline, experiment.treatment):
+    for arm in experiment.arms.values():
         build_trial_env(arm, config, environ)
         profile = config.auth_profile(arm.auth)
         if profile.kind == "claude_login":
@@ -159,10 +159,8 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "endpoints": experiment.endpoints,
         "quality": experiment.quality,
         "exclude": [{"task": e.task, "reason": e.reason} for e in experiment.exclude],
-        "arms": {
-            "baseline": _arm_record(experiment.baseline, config, experiment.root),
-            "treatment": _arm_record(experiment.treatment, config, experiment.root),
-        },
+        "arms": {role: _arm_record(arm, config, experiment.root)
+                 for role, arm in experiment.arms.items()},
         "agent_builds": builds,
         "task_image_builder": config.builder.record() if config.builder else None,
         "capture_hosts": experiment_capture_hosts(experiment, config),
@@ -197,7 +195,7 @@ def check_resumable(run_dir: Path, experiment: Experiment) -> dict:
 
 def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
               environ: Mapping[str, str], run_dir: Path) -> dict:
-    arm = experiment.baseline if trial.role == "baseline" else experiment.treatment
+    arm = experiment.arms[trial.role]
     task_dir = experiment.tasks / trial.task if experiment.tasks.name != trial.task \
         else experiment.tasks
     trial_dir = run_dir / "trials" / trial.trial_id
@@ -287,7 +285,7 @@ def completed_trials(run_dir: Path) -> set[str]:
 
 def egress_endpoint(experiment: Experiment, config: LocalConfig):
     """The proxy endpoint whose own upstream calls are captured, if one is configured."""
-    for arm in (experiment.baseline, experiment.treatment):
+    for arm in experiment.arms.values():
         if arm.endpoint_name and config.endpoint(arm.endpoint_name).egress_capture_port:
             return config.endpoint(arm.endpoint_name)
     return None
@@ -308,9 +306,38 @@ def start_egress_capture(run_dir: Path, experiment: Experiment,
     return capture
 
 
+def acquire_run_lock(store: Path, run_dir: Path) -> Path:
+    """One run at a time per artifact store: runs share the proxy, Docker, the login, and the
+    start-of-run sweep of stale login copies, which would delete another run's live copy."""
+    lock = store / ".run.lock"
+    if lock.exists():
+        try:
+            pid = int(lock.read_text().split()[0])
+            os.kill(pid, 0)
+        except (ValueError, IndexError, ProcessLookupError):
+            pass  # stale: its process is gone
+        except PermissionError:
+            pid = None
+        else:
+            raise RunError(f"another run is active (pid {pid}, {lock.read_text().split(None, 1)[-1]})")
+    store.mkdir(parents=True, exist_ok=True)
+    lock.write_text(f"{os.getpid()} {run_dir}")
+    return lock
+
+
 def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
             environ: Mapping[str, str], limit: int | None = None,
             on_trial: Callable[[PlannedTrial, dict | None], None] = lambda t, r: None) -> None:
+    lock = acquire_run_lock(config.store, run_dir)
+    try:
+        _execute(run_dir, experiment, config, environ, limit, on_trial)
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def _execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
+             environ: Mapping[str, str], limit: int | None,
+             on_trial: Callable[[PlannedTrial, dict | None], None]) -> None:
     sweep_leftovers(run_dir)
     done = completed_trials(run_dir) if (run_dir / "trials").exists() else set()
     pending = [t for t in plan_trials(experiment) if t.trial_id not in done]
@@ -333,7 +360,7 @@ def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
                     f"subscription usage limit hit at {trial.trial_id}; resume with "
                     f"`pennybench run <experiment> --resume {run_dir}` after the window resets")
             # Both trials of a pair share the task image, so the cache is trimmed between pairs.
-            if config.builder and trial.position == 1:
+            if config.builder and trial.position == len(experiment.roles) - 1:
                 config.builder.enforce_cap()
     finally:
         if egress:

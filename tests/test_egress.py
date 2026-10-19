@@ -80,8 +80,8 @@ def test_egress_capture_requires_cache_isolation(tmp_path):
     from pennybench.config import Endpoint
     from pennybench.run import RunError, start_egress_capture
     arm = SimpleNamespace(endpoint_name="proxy")
-    experiment = SimpleNamespace(baseline=SimpleNamespace(endpoint_name=None), treatment=arm,
-                                 cache_isolation="none")
+    experiment = SimpleNamespace(arms={"baseline": SimpleNamespace(endpoint_name=None),
+                                       "treatment": arm}, cache_isolation="none")
     endpoint = Endpoint(name="proxy", base_url="http://x", egress_capture_port=18999)
     config = SimpleNamespace(endpoint=lambda name: endpoint, store=tmp_path)
     with pytest.raises(RunError, match="cache_isolation"):
