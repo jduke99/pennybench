@@ -80,7 +80,8 @@ def cmd_run(args) -> int:
             print(f"  {trial.trial_id} {record['status']} reward={record['reward']} "
                   f"{record['runner_wall_clock_s']:.0f}s", flush=True)
 
-    execute(run_dir, experiment, config, environ, limit=args.limit, on_trial=report)
+    execute(run_dir, experiment, config, environ, limit=args.limit, on_trial=report,
+            stop_at_utilization=args.stop_at_utilization)
     return 0
 
 
@@ -135,6 +136,9 @@ def main(argv: list[str] | None = None) -> int:
     run.add_argument("experiment")
     run.add_argument("--resume", metavar="RUN_DIR")
     run.add_argument("--limit", type=int, metavar="PAIRS", help="run at most this many pairs")
+    run.add_argument("--stop-at-utilization", type=float, metavar="FRACTION",
+                     help="stop between pairs once the login's 5-hour or 7-day usage reaches this "
+                          "fraction (e.g. 0.7), so you can switch logins and resume")
     run.add_argument("--allow-dirty", action="store_true",
                      help="run from an uncommitted tree; the run is marked not pre-registered")
     run.set_defaults(func=cmd_run)

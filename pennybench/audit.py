@@ -40,6 +40,7 @@ class TrialEvidence:
     home_hits: int
     missing_skills: list[str]
     nonce_missing: bool
+    login_plan: str | None
     environment_sha256: str | None
     environment_error: str | None
     decode_errors: int
@@ -69,6 +70,7 @@ def trial_evidence(trial_dir: Path, record: dict, manifest: dict) -> TrialEviden
         marker_hits=sum(1 for c in calls if any(m in c.request_text for m in markers)),
         home_hits=sum(1 for c in calls if home and home in c.request_text),
         # Claude Code lists installed skills by name in its requests.
+        login_plan=(lambda l: f"{l.get('subscription')}/{l.get('rate_limit_tier')}" if l.get("subscription") else None)(record.get("login") or {}),
         nonce_missing=bool(record.get("cache_nonce")) and bool(calls) and not any(
             record["cache_nonce"] in c.request_text for c in calls),
         environment_sha256=record.get("environment_sha256"),
@@ -179,6 +181,17 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
                 egress_fail.append(f"{e.trial_id}: proxy upstream capture is missing its calls")
         checks.append(_check("egress", egress_fail,
                              "every proxy trial's calls appear in the proxy's upstream capture"))
+
+    plans: dict[tuple, set] = {}
+    for e in final:
+        if e.login_plan:
+            plans.setdefault((e.task, e.rep), set()).add(e.login_plan)
+    plan_fail = [f"{task} r{rep}: the arms of a pair used different account plans {sorted(p)}"
+                 for (task, rep), p in plans.items() if len(p) > 1]
+    run_plans = sorted({e.login_plan for e in final if e.login_plan})
+    checks.append(_check("login_plan", plan_fail,
+                         "both arms of every pair ran on one account plan"
+                         + (f" (plans in this run: {', '.join(run_plans)})" if run_plans else "")))
 
     env_fail = [f"{e.trial_id}: package list not recorded ({e.environment_error})"
                 for e in final if e.status == "complete" and not e.environment_sha256]

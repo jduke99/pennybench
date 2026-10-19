@@ -64,3 +64,56 @@ def test_sweep_removes_stale_staged_and_trial_copies(tmp_path, monkeypatch):
     (trial / ".credentials.json").write_text("{}")
     removed = cl.sweep_leftovers(tmp_path / "run")
     assert not staged.exists() and not (trial / ".credentials.json").exists() and len(removed) == 2
+
+
+def test_usage_probe_reads_rate_limit_headers_even_from_a_429(monkeypatch):
+    import io
+    import urllib.error
+    from email.message import Message
+
+    def headers(**values):
+        m = Message()
+        for k, v in values.items():
+            m[k.replace("_", "-")] = v
+        return m
+
+    base = {"anthropic-ratelimit-unified-5h-utilization": "0.71",
+            "anthropic-ratelimit-unified-7d-utilization": "0.2",
+            "anthropic-ratelimit-unified-5h-reset": "1792388400",
+            "anthropic-ratelimit-unified-7d-reset": "1792551600"}
+    m = Message()
+    for k, v in base.items():
+        m[k] = v
+
+    class Response:
+        headers = m
+
+    monkeypatch.setattr(cl.urllib.request, "urlopen", lambda *a, **k: Response())
+    login = cl.Login(oauth={"accessToken": "at", "refreshToken": "rt"})
+    usage = cl.probe_usage(login)
+    assert usage["five_hour"] == 0.71 and usage["five_hour_reset"] == 1792388400
+
+    def raise429(*a, **k):
+        raise urllib.error.HTTPError("u", 429, "limit", m, io.BytesIO(b"{}"))
+    monkeypatch.setattr(cl.urllib.request, "urlopen", raise429)
+    assert cl.probe_usage(login)["seven_day"] == 0.2
+
+    def offline(*a, **k):
+        raise urllib.error.URLError("no network")
+    monkeypatch.setattr(cl.urllib.request, "urlopen", offline)
+    assert cl.probe_usage(login) is None
+
+
+def test_usage_stop_reason_names_the_window_and_continues_when_unknown():
+    usage = {"five_hour": 0.71, "seven_day": 0.2, "five_hour_reset": 1792388400, "seven_day_reset": 1792551600}
+    assert "5-hour usage is 71%" in cl.usage_stop_reason(usage, 0.7)
+    assert cl.usage_stop_reason(usage, 0.8) is None
+    assert "7-day usage is 90%" in cl.usage_stop_reason({**usage, "five_hour": 0.1, "seven_day": 0.9}, 0.7)
+    assert cl.usage_stop_reason(None, 0.7) is None
+
+
+def test_login_plan_is_non_secret_and_audit_flags_arms_on_different_plans(tmp_path):
+    login = cl.Login(oauth={"accessToken": "SECRET-ACCESS", "refreshToken": "SECRET-REFRESH",
+                            "subscriptionType": "pro", "rateLimitTier": "default_claude_ai"})
+    assert login.plan == {"subscription": "pro", "rate_limit_tier": "default_claude_ai"}
+    assert "SECRET" not in json.dumps(login.plan)

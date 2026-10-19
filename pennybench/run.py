@@ -15,7 +15,8 @@ from typing import Callable, Mapping
 from pennybench.agent_cache import ensure_claude_code
 from pennybench.agent_env import build_trial_env
 from pennybench.capture import ANTHROPIC_HOST, WireCapture, capture_hosts
-from pennybench.claude_login import StagedLogin, ensure_login, remove_copies, sweep_leftovers
+from pennybench.claude_login import (StagedLogin, ensure_login, probe_usage, remove_copies,
+                                     sweep_leftovers, usage_stop_reason)
 from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
@@ -240,6 +241,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
                 # included; those copies go even if syncing a refresh back failed.
                 removed = remove_copies(trial_dir)
             login_record["removed_copies"] = removed
+            login_record.update(login.plan)
     result = outcome.result or {}
     environment = record_environment(result.get("trial_name"), trial_dir)
     remove_stray_images(trial.task)
@@ -327,18 +329,33 @@ def acquire_run_lock(store: Path, run_dir: Path) -> Path:
 
 def execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
             environ: Mapping[str, str], limit: int | None = None,
-            on_trial: Callable[[PlannedTrial, dict | None], None] = lambda t, r: None) -> None:
+            on_trial: Callable[[PlannedTrial, dict | None], None] = lambda t, r: None,
+            stop_at_utilization: float | None = None) -> None:
     lock = acquire_run_lock(config.store, run_dir)
     try:
-        _execute(run_dir, experiment, config, environ, limit, on_trial)
+        _execute(run_dir, experiment, config, environ, limit, on_trial, stop_at_utilization)
     finally:
         lock.unlink(missing_ok=True)
 
 
+def _usage_check(experiment: Experiment, config: LocalConfig, threshold: float) -> str | None:
+    """Stop reason from the login's current usage, or None to continue. The login is read
+    fresh, so a login swapped between trials is the one measured."""
+    for arm in experiment.arms.values():
+        profile = config.auth_profile(arm.auth)
+        if profile.kind == "claude_login":
+            return usage_stop_reason(probe_usage(ensure_login(profile.min_valid_minutes)), threshold)
+    raise RunError("--stop-at-utilization needs an arm that uses a claude_login auth profile")
+
+
 def _execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
              environ: Mapping[str, str], limit: int | None,
-             on_trial: Callable[[PlannedTrial, dict | None], None]) -> None:
+             on_trial: Callable[[PlannedTrial, dict | None], None],
+             stop_at_utilization: float | None = None) -> None:
     sweep_leftovers(run_dir)
+    if stop_at_utilization is not None and (reason := _usage_check(
+            experiment, config, stop_at_utilization)):
+        raise UsageLimitError(f"not starting: {reason}")
     done = completed_trials(run_dir) if (run_dir / "trials").exists() else set()
     pending = [t for t in plan_trials(experiment) if t.trial_id not in done]
     if limit is not None:
@@ -360,8 +377,15 @@ def _execute(run_dir: Path, experiment: Experiment, config: LocalConfig,
                     f"subscription usage limit hit at {trial.trial_id}; resume with "
                     f"`pennybench run <experiment> --resume {run_dir}` after the window resets")
             # Both trials of a pair share the task image, so the cache is trimmed between pairs.
-            if config.builder and trial.position == len(experiment.roles) - 1:
-                config.builder.enforce_cap()
+            if trial.position == len(experiment.roles) - 1:
+                if config.builder:
+                    config.builder.enforce_cap()
+                # Only between pairs: both arms of a pair always run on the same login.
+                if stop_at_utilization is not None and (reason := _usage_check(
+                        experiment, config, stop_at_utilization)):
+                    raise UsageLimitError(
+                        f"stopping after {trial.trial_id}: {reason}. Switch the Claude Code login "
+                        f"if you like, then resume: `pennybench run <experiment> --resume {run_dir}`")
     finally:
         if egress:
             egress.stop()

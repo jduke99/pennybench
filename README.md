@@ -166,6 +166,24 @@ beside it, pass an earlier run: `pennybench report <run> --reference <paired run
 that run's baseline arm for the same tasks. A single arm cannot answer "is it better than the
 baseline", so use it to understand a result, then confirm with a paired experiment.
 
+### Switching logins (usage windows)
+
+A Claude subscription's 5-hour usage window drains quickly under a benchmark (a Pro login
+gives roughly an hour of this run per window, less if you are also working on it). Pass
+`--stop-at-utilization 0.7` and the run checks the login's 5-hour and 7-day usage (one
+1-token call's rate-limit headers) before starting and after every pair, and stops cleanly at
+a pair boundary when either reaches the fraction, printing when it resets. Then either wait,
+or switch the Claude Code login (`claude auth login`) and `--resume`: the login is read fresh
+for every trial, so the next trial uses the new account.
+
+Requirements for switching: the new account must be linked to the proxy if an arm routes
+through one (for PennyRouter, run `penny claude` once with it); both arms of a pair always
+run on one login because the check only happens between pairs; and each trial records its
+account plan (`subscription`, `rate_limit_tier`), with the `login_plan` audit check failing a
+pair whose arms ran on different plans. Cost is notional and plan-independent, but a
+different plan can change limits or model access, so a mixed-plan run lists its plans in the
+audit.
+
 Only one run can be active per artifact store (a lock file in the store); a second `run` is
 refused until the first ends.
 

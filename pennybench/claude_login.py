@@ -14,13 +14,15 @@ from __future__ import annotations
 
 import json
 import os
-
-from pennybench.harbor_agent import LOGIN_DIR, LOGIN_FILE
 import subprocess
 import tempfile
 import time
+import urllib.error
+import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+
+from pennybench.harbor_agent import LOGIN_DIR, LOGIN_FILE
 
 KEYCHAIN_SERVICE = "Claude Code-credentials"
 LINUX_CREDENTIALS = Path.home() / ".claude" / ".credentials.json"
@@ -65,6 +67,12 @@ class Login:
     @property
     def secrets(self) -> tuple[str, ...]:
         return tuple(v for v in (self.oauth.get("accessToken"), self.oauth.get("refreshToken")) if v)
+
+    @property
+    def plan(self) -> dict:
+        """Non-secret account plan fields, recorded per trial so a mid-run login swap shows."""
+        return {"subscription": self.oauth.get("subscriptionType"),
+                "rate_limit_tier": self.oauth.get("rateLimitTier")}
 
     @property
     def minutes_left(self) -> float:
@@ -155,3 +163,51 @@ def sweep_leftovers(run_dir: Path) -> list[str]:
     if run_dir.exists():
         removed += [str(run_dir / r) for r in remove_copies(run_dir)]
     return removed
+
+
+USAGE_HEADERS = {
+    "five_hour": "anthropic-ratelimit-unified-5h-utilization",
+    "seven_day": "anthropic-ratelimit-unified-7d-utilization",
+    "five_hour_reset": "anthropic-ratelimit-unified-5h-reset",
+    "seven_day_reset": "anthropic-ratelimit-unified-7d-reset",
+}
+
+
+def probe_usage(login: Login, timeout: float = 30) -> dict | None:
+    """The account's current usage, from the rate-limit headers of one 1-token Haiku call (a
+    negligible spend; a 429 still carries them). Returns utilization as fractions and reset
+    times as epoch seconds, or None when the headers are unavailable. Never logs the token."""
+    body = json.dumps({
+        "model": "claude-haiku-5-5", "max_tokens": 1,
+        "system": [{"type": "text", "text": "You are Claude Code, Anthropic's official CLI for Claude."}],
+        "messages": [{"role": "user", "content": "Reply OK."}]}).encode()
+    request = urllib.request.Request(
+        "https://api.anthropic.com/v1/messages", data=body, method="POST",
+        headers={"authorization": f"Bearer {login.oauth['accessToken']}",
+                 "anthropic-version": "2023-06-01", "anthropic-beta": "oauth-2025-04-20",
+                 "content-type": "application/json"})
+    try:
+        headers = urllib.request.urlopen(request, timeout=timeout).headers
+    except urllib.error.HTTPError as exc:
+        headers = exc.headers
+    except (urllib.error.URLError, TimeoutError):
+        return None
+    usage = {}
+    for key, header in USAGE_HEADERS.items():
+        value = headers.get(header)
+        if value is None:
+            return None
+        usage[key] = float(value) if "reset" not in key else int(value)
+    return usage
+
+
+def usage_stop_reason(usage: dict | None, threshold: float) -> str | None:
+    """Why a run should stop before the next trial, or None to continue."""
+    if usage is None:
+        return None
+    for key, label in (("five_hour", "5-hour"), ("seven_day", "7-day")):
+        if usage[key] >= threshold:
+            reset = time.strftime("%a %H:%M", time.localtime(usage[f"{key}_reset"]))
+            return (f"{label} usage is {usage[key]:.0%} (stop at {threshold:.0%}); "
+                    f"it resets {reset} local time")
+    return None

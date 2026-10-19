@@ -72,6 +72,7 @@ def make_run(tmp_path: Path, trials: list[dict], *, treatment_marker=None,
             "status": t.get("status", "complete"), "agent_version": t.get("version", "2.1.302"),
             "task_skills": t.get("skills", []),
             "cache_nonce": t.get("nonce"),
+            "login": {"subscription": t["plan"], "rate_limit_tier": "default"} if t.get("plan") else None,
             "environment_sha256": t.get("env", "env-a"),
             "environment_error": None if t.get("env", "env-a") else "image was not built",
         }))
@@ -191,3 +192,11 @@ def test_missing_cache_isolation_line_fails(tmp_path):
     run = make_run(tmp_path, pair(base_text="ref n1", baseline__nonce="n1", treatment__nonce="n2"))
     assert failed(audit_run(run))["cache_isolation"] == [
         "0-t1-treatment: its cache isolation line never reached the model"]
+
+
+def test_arms_of_a_pair_on_different_account_plans_fail(tmp_path):
+    run = make_run(tmp_path, pair(baseline__plan="pro", treatment__plan="max"))
+    assert "login_plan" in failed(audit_run(run))
+    ok = tmp_path / "ok"
+    ok.mkdir()
+    assert "login_plan" not in failed(audit_run(make_run(ok, pair(baseline__plan="pro", treatment__plan="pro"))))
