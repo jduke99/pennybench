@@ -8,26 +8,21 @@ tokens, execution time, and official task rewards.
 The shared runner lives in `pennybench/`. Dataset pins, experiment definitions and
 documentation live under [benchmarks/](benchmarks/README.md).
 
-## Results
-
-SkillsBench v1.1, 60 tasks (57 paired), Claude Code with Sonnet 5.5, native versus PennyRouter:
-
-| Measure | Native | PennyRouter | Change |
-| --- | --- | --- | --- |
-| Model-call cost, summed | $6.68 | $4.66 | **-30.1%** |
-| Model-call cost, median per task | | | **-34.0%** (95% CI -37.2% to -28.4%); lower on 53 of 57 |
-| Total tokens, median per task | | | -18.0% (95% CI -21.1% to -14.7%) |
-| Wall clock, median per task | | | -13.4% (95% CI -19.8% to +9.3%; not significant) |
-| Mean official task reward | 0.570 | 0.621 | no significant difference (higher on 6, lower on 4, tied on 47) |
-
-Cost is notional USD at pinned rates, not a subscription bill. The run used a signed-in
-Claude subscription at medium effort and was stopped after 60 of 72 scheduled tasks; the
-stop and two environment omissions were decided after the fact, so these figures describe
-those tasks and are not a pre-registered result.
-
 | Suite | Start here |
 | --- | --- |
 | SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) · [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/) |
+
+| Endpoint | Median change | 95% CI, median % | Sum change | P-value |
+| --- | ---: | ---: | ---: | ---: |
+| Model-call cost | −34.0% | [−37.2, −28.4] | −30.1% | 4.13e−10 |
+| Total tokens | −18.0% | [−21.1, −14.7] | −18.6% | 4.82e−05 |
+| Output tokens | +4.3% | [−7.5, +7.3] | −0.7% | 0.877 |
+| Fresh input tokens | +25.0% | [+14.3, +33.3] | +24.1% | 3.72e−05 |
+| Cache-read tokens | −17.7% | [−23.0, −14.4] | −19.0% | 1.18e−04 |
+| Cache-write tokens | −20.6% | [−28.1, −13.2] | −19.0% | 3.76e−07 |
+| Model calls | +0.0% | [+0.0, +0.0] | +1.0% | 0.912 |
+| Agent execution time | −13.4% | [−19.8, +9.3] | −20.2% | 0.244 |
+| Official task reward (6 higher, 4 lower, 47 tied) | n/a | n/a | +8.9% (0.570 → 0.621) | 0.754 (sign test) |
 
 ## Install
 
