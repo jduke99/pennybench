@@ -1,6 +1,6 @@
 # 60-task report
 
-Scope: the first 60 projects scheduled in the original 72-project evaluation. The user requested stopping further work and reporting these 60 tasks.
+Scope: the first 60 projects scheduled in the original 72-project evaluation.
 
 **57 comparable pairs** contribute to paired statistics. One project (paratransit-routing) has a native timeout. Two projects (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. The omissions are explicitly post-hoc; this is not a claim from a completed, pre-registered 60-project experiment. No grader, trial reward, original manifest, or original artifact was changed.
 
