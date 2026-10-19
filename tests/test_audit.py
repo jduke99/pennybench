@@ -200,3 +200,11 @@ def test_arms_of_a_pair_on_different_account_plans_fail(tmp_path):
     ok = tmp_path / "ok"
     ok.mkdir()
     assert "login_plan" not in failed(audit_run(make_run(ok, pair(baseline__plan="pro", treatment__plan="pro"))))
+
+
+def test_partial_run_may_have_unfinished_pairs_but_a_full_run_may_not(tmp_path):
+    trials = pair("t1") + pair("t2")
+    trials[3]["status"] = "usage_limit"
+    run = make_run(tmp_path, trials)
+    assert "pairing" in failed(audit_run(run))
+    assert "pairing" not in failed(audit_run(run, partial=True))

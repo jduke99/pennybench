@@ -211,8 +211,10 @@ def audit_run(run_dir: Path, partial: bool = False) -> list[Check]:
     by_pair: dict[tuple, set] = {}
     for e in final:
         by_pair.setdefault((e.task, e.rep), set()).add(e.role)
+    # A partial run is allowed to have unfinished pairs (they are dropped from the stats), but a
+    # complete one is not.
     sym_fail += [f"{t} r{r}: only {sorted(roles)} finished" for (t, r), roles in by_pair.items()
-                 if roles != set(arms)]
+                 if roles != set(arms) and not partial]
     checks.append(_check("pairing", sym_fail,
                          "every finished pair has both arms (a single-arm run has one trial per "
                          "task run); excluded tasks never ran"))
