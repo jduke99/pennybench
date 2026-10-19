@@ -13,7 +13,8 @@ from pathlib import Path
 from typing import Callable
 
 from pennybench.config import LocalConfig
-from pennybench.environment import record_environment, remove_stray_images
+from pennybench.environment import (record_environment, remove_stray_containers,
+                                    remove_stray_images)
 from pennybench.harbor import harbor_bin, run_harbor
 from pennybench.spec import Experiment
 
@@ -57,6 +58,7 @@ def run_oracle_task(task_dir: Path, out_dir: Path, config: LocalConfig) -> dict:
     result = outcome.result or {}
     environment = record_environment(result.get("trial_name"), out_dir)
     remove_stray_images(task_dir.name)
+    remove_stray_containers(task_dir.name)
     record = {
         "task": task_dir.name,
         "status": outcome.status,

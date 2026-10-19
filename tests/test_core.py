@@ -374,3 +374,24 @@ def test_usage_limit_is_detected_from_claude_codes_own_output(tmp_path):
     (log / "claude-code.txt").write_text("normal output, task failed for its own reasons")
     assert not hit_usage_limit(tmp_path)
     assert "usage_limit" not in FINAL_STATUSES
+
+
+# Harbor watchdog
+
+def test_a_hung_harbor_is_killed_and_reported_as_a_retryable_failure(tmp_path):
+    import sys, time
+    from pennybench.harbor import run_harbor
+    start = time.monotonic()
+    outcome = run_harbor([sys.executable, "-c", "import time; time.sleep(60)"], {}, tmp_path / "out",
+                         tmp_path / "log", timeout_s=1)
+    assert outcome.hung and outcome.status == "harbor_failed" and outcome.result is None
+    assert time.monotonic() - start < 30
+    from pennybench.run import FINAL_STATUSES
+    assert outcome.status not in FINAL_STATUSES
+
+
+def test_a_harbor_that_finishes_is_not_marked_hung(tmp_path):
+    import sys
+    from pennybench.harbor import run_harbor
+    outcome = run_harbor([sys.executable, "-c", "pass"], {}, tmp_path / "out", tmp_path / "log", timeout_s=30)
+    assert not outcome.hung and outcome.status == "harbor_failed"  # no result.json was written

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import json
+import os
+import signal
 import shutil
 import subprocess
 import sys
@@ -75,24 +77,48 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
     return argv
 
 
+# A trial's own limits are build (up to ~15 min on a cold cache), agent (<= 15 min), and
+# verifier (<= 15 min). Harbor's timeouts depend on `docker compose` calls returning; when one
+# wedges, they never fire. This hard cap is the backstop.
+TRIAL_TIMEOUT_S = 3600
+
+
 @dataclass(frozen=True)
 class HarborOutcome:
     exit_code: int
     result_path: Path | None
     result: dict | None
+    # Harbor did not finish within the cap and was killed; the trial is incomplete.
+    hung: bool = False
 
     @property
     def status(self) -> str:
-        if self.result is None:
+        if self.result is None or self.hung:
             return "harbor_failed"
         return "agent_error" if self.result.get("exception_info") else "complete"
 
 
 def run_harbor(argv: list[str], host_env: dict[str, str], out_dir: Path,
-               log_path: Path) -> HarborOutcome:
+               log_path: Path, timeout_s: float = TRIAL_TIMEOUT_S) -> HarborOutcome:
     out_dir.mkdir(parents=True, exist_ok=True)
+    hung = False
     with log_path.open("w") as log:
-        proc = subprocess.run(argv, env=host_env, stdout=log, stderr=subprocess.STDOUT)
+        # Its own session, so a timeout can kill Harbor together with the docker compose calls
+        # it spawned.
+        proc = subprocess.Popen(argv, env=host_env, stdout=log, stderr=subprocess.STDOUT,
+                                start_new_session=True)
+        try:
+            proc.wait(timeout=timeout_s)
+        except subprocess.TimeoutExpired:
+            hung = True
+            os.killpg(proc.pid, signal.SIGTERM)
+            try:
+                proc.wait(timeout=20)
+            except subprocess.TimeoutExpired:
+                os.killpg(proc.pid, signal.SIGKILL)
+                proc.wait()
+    if hung:
+        return HarborOutcome(proc.returncode, None, None, hung=True)
     results = sorted(out_dir.glob("*/*/result.json"))
     if not results:
         return HarborOutcome(proc.returncode, None, None)

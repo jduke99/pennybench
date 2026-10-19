@@ -68,6 +68,20 @@ def remove_stray_images(task_name: str) -> None:
             remove_image(image)
 
 
+def remove_stray_containers(task_name: str) -> None:
+    """Containers (and networks) a killed Harbor left for this task, by Harbor's naming
+    (`<task>__<trial>__env-...`). Trials of one task never run concurrently."""
+    name = f"{task_name.lower()}__"
+    ids = subprocess.run(["docker", "ps", "-aq", "--filter", f"name={name}"],
+                         capture_output=True, text=True).stdout.split()
+    if ids:
+        subprocess.run(["docker", "rm", "-f", *ids], capture_output=True, text=True)
+    nets = subprocess.run(["docker", "network", "ls", "--format", "{{.Name}}"],
+                          capture_output=True, text=True).stdout.split()
+    for net in [n for n in nets if n.startswith(name)]:
+        subprocess.run(["docker", "network", "rm", net], capture_output=True, text=True)
+
+
 def record_environment(trial_name: str | None, trial_dir: Path) -> dict:
     """Write environment.txt beside the trial and remove the image, whatever happens.
     Returns {"sha256", "error"}; a trial whose image was never built has neither."""

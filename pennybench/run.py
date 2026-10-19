@@ -22,7 +22,8 @@ from pennybench.config import LocalConfig
 from pennybench.harbor import harbor_command, harbor_version, run_harbor
 from pennybench.plan import PlannedTrial, plan_trials
 from pennybench.digest import file_sha256
-from pennybench.environment import record_environment, remove_stray_images
+from pennybench.environment import (record_environment, remove_stray_containers,
+                                    remove_stray_images)
 from pennybench.spec import Arm, Experiment, task_skill_dirs
 
 # Statuses that end a trial for good; anything else is retried on resume.
@@ -245,6 +246,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     result = outcome.result or {}
     environment = record_environment(result.get("trial_name"), trial_dir)
     remove_stray_images(trial.task)
+    remove_stray_containers(trial.task)
     leaks = find_secret_leaks(trial_dir, secrets)
     record = {
         **trial.to_json(),
@@ -256,6 +258,7 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         "finished_at": _now(),
         "runner_wall_clock_s": round(wall, 3),
         "harbor_exit_code": outcome.exit_code,
+        "harbor_hung": outcome.hung,
         "harbor_result": str(outcome.result_path.relative_to(trial_dir))
         if outcome.result_path else None,
         "reward": (result.get("verifier_result") or {}).get("rewards", {}).get("reward"),
