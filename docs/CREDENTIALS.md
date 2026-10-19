@@ -9,8 +9,7 @@ PennyBench is not a credential or subscription service.
 Use `claude auth login`, then install PennyRouter with `npx pennyrouter install` and select
 the Anthropic subscription. Confirm that `penny claude` starts normally; that links the same
 account to PennyRouter.
-Keep `auth: claude-login` in both arms and `[auth.claude-login]` in your private
-`pennybench.local.toml`. The default endpoint is `https://api.pennyrouter.com`.
+The default endpoint is `https://api.pennyrouter.com`.
 
 The runner reads Claude Code's own `claudeAiOauth` entry from the macOS Keychain or
 Linux credentials file. It stages a private copy per trial, installs it into the

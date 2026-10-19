@@ -43,8 +43,6 @@ account or subscription access.
 2. Install PennyRouter with `npx pennyrouter install` and select the Anthropic subscription.
    Confirm that `penny claude` starts normally; that links the same Claude account to
    PennyRouter.
-3. Keep the example's `claude-login` profile. Each arm uses a private staged copy
-   of your login; both arms of a pair use the same account plan.
 
 See [credentials and supported auth modes](docs/CREDENTIALS.md) for token and API-key
 profiles, limitations, credential cleanup, and task-container exposure.
