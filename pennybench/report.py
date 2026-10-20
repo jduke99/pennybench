@@ -9,6 +9,7 @@ from pennybench.audit import write_audit
 from pennybench.metrics import METRICS, run_metrics, unattributed_egress
 from pennybench.solo import format_solo, solo_summary
 from pennybench.stats import compute_stats
+from pennybench.failures import outcome_summary, format_outcomes
 
 
 def build_report(run_dir: Path, partial: bool = False, reference: Path | None = None) -> dict:
@@ -18,6 +19,8 @@ def build_report(run_dir: Path, partial: bool = False, reference: Path | None = 
         return report
     manifest = json.loads((run_dir / "run.json").read_text())
     trials = run_metrics(run_dir)
+    report["outcomes"] = outcome_summary(trials)
+    (run_dir / "outcomes.json").write_text(json.dumps(report["outcomes"], indent=2) + "\n")
     (run_dir / "metrics.json").write_text(json.dumps(trials, indent=2) + "\n")
     if len(manifest["arms"]) == 1:
         (role, arm), = manifest["arms"].items()
@@ -46,7 +49,8 @@ def format_report(report: dict) -> str:
         return f"audit FAILED; no stats computed. See {report['audit']}"
     if "solo" in report:
         solo = report["solo"]
-        return format_solo(solo["summary"], solo["experiment"], solo["stage"], solo["arm"])
+        return (format_solo(solo["summary"], solo["experiment"], solo["stage"], solo["arm"])
+                + "\n\n" + format_outcomes(report.get("outcomes", {})))
     stats = report["stats"]
     lines = [f"{stats['experiment']}  stage={stats['stage']}  tasks={stats['n_tasks']}"]
     if stats["claim"]:
@@ -91,4 +95,5 @@ def format_report(report: dict) -> str:
     lines.append("")
     lines.append("median = per-task median change, treatment vs baseline. H-L = Hodges-Lehmann. "
                  "p = Wilcoxon signed-rank on per-task log ratios. total = change in summed values.")
+    lines.extend(["", format_outcomes(report.get("outcomes", {}))])
     return "\n".join(lines)

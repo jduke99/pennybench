@@ -10,6 +10,7 @@ from pathlib import Path
 
 from pennybench.wire import ModelCall, model_calls, read_capture, usage_totals
 from pennybench.artifacts import trial_records
+from pennybench.failures import classify_failure
 
 RATES_PATH = Path(__file__).with_name("rates.json")
 
@@ -148,6 +149,7 @@ def trial_metrics(trial_dir: Path, egress: list[ModelCall] | None = None) -> dic
         "rep": record["rep"],
         "role": record["role"],
         "status": record["status"],
+        "failure": classify_failure(trial_dir, record, harbor),
         "rates_version": rate_table()["version"],
         "metrics": values,
     }
