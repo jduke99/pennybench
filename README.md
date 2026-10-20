@@ -81,6 +81,13 @@ Reference checks use the supplied solutions, not an LLM. Model trials consume yo
 subscription or API usage. Do not launch multiple runs sharing the same artifact
 store, credential source, or gateway. The runner enforces one run per store.
 
+Claude Code executions receive a five-second cleanup grace period after a terminal
+CLI result. If execution remains open, PennyBench sends TERM, then KILL, to its
+isolated process group while leaving the container available for verification.
+`agent/claude-cleanup.json` records whether a terminal result was seen and whether
+cleanup exceeded the grace period. A completed CLI result does not set the reward;
+the verifier still determines task success.
+
 Each model run prints its artifact directory. Audit and report that exact path:
 
 ```sh
