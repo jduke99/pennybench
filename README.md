@@ -3,10 +3,10 @@
 Reproducible, paired evaluations of native Claude Code and Claude Code with [PennyRouter](https://pennyrouter.com) using the [Harbor
 harness](https://github.com/harbor-framework/harbor) framework including task verifiers.
 
-This work was inspired by and adapted from the evaluation series conducted by JetBrains' [Denis Shiryaev](https://blog.jetbrains.com/author/denis-shiryaev-jetbrains-com) on RTK, Caveman, and Ponytail.
+This work was inspired by and adapted from the [evaluation series](https://blog.jetbrains.com/ai/2026/07/ponytail-skill-claude-tested/) conducted by JetBrains' [Denis Shiryaev](https://blog.jetbrains.com/author/denis-shiryaev-jetbrains-com) on RTK, Caveman, and Ponytail.
 
 ##  SkillsBench
-Includes [SkillsBench](https://www.skillsbench.ai/) Core and Extended tasks (n=60), excludes Extreme tasks (>4hr timeout, n=26). See [full report](https://jduke99.github.io/pennybench/skillsbench-60/) and [data files](benchmarks/skillsbench/README.md).
+Includes [SkillsBench](https://www.skillsbench.ai/blogs/introducing-skillsbench) Core and Extended tasks (n=60), excludes Extreme tasks (>4hr timeout, n=26). See [glossy report](https://jduke99.github.io/pennybench/skillsbench-60/) and [data files](benchmarks/skillsbench/README.md).
 
 
 **Result Overview**
