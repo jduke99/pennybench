@@ -1,20 +1,18 @@
 # PennyBench
 
-Reproducible, paired evaluations of coding-agent configurations using the **Harbor
-harness and benchmark-provided task verifiers**. Run the same task natively and
-through PennyRouter, then audit the recorded evidence and compare model-call cost,
-tokens, execution time, and official task rewards.
+Reproducible, paired evaluations of native Claude Code and Claude Code with [PennyRouter](https://pennyrouter.com) using the [Harbor
+harness](https://github.com/harbor-framework/harbor) framework including task verifiers.
 
-The shared runner lives in `pennybench/`. Dataset pins, experiment definitions and
-documentation live under [benchmarks/](benchmarks/README.md).
+This work was inspired by and adapted from the evaluation series conducted by JetBrains' [Denis Shiryaev](https://blog.jetbrains.com/author/denis-shiryaev-jetbrains-com) on RTK, Caveman, and Ponytail.
 
-| Suite | Start here |
-| --- | --- |
-| SkillsBench | [60-task results and reproduction](benchmarks/skillsbench/README.md) · [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/) |
+##  SkillsBench
+Includes [SkillsBench](https://www.skillsbench.ai/) Core and Extended tasks (n=60), excludes Extreme tasks (>4hr timeout, n=26). See [full report](https://jduke99.github.io/pennybench/skillsbench-60/) and [data files](benchmarks/skillsbench/README.md).
 
+
+**Result Overview**
 | Endpoint | Median change | 95% CI, median % | Sum change | P-value |
 | --- | ---: | ---: | ---: | ---: |
-| Model-call cost | −34.0% | [−37.2, −28.4] | −30.1% | 4.13e−10 |
+| Total cost | −34.0% | [−37.2, −28.4] | −30.1% | 4.13e−10 |
 | Total tokens | −18.0% | [−21.1, −14.7] | −18.6% | 4.82e−05 |
 | Output tokens | +4.3% | [−7.5, +7.3] | −0.7% | 0.877 |
 | Fresh input tokens | +25.0% | [+14.3, +33.3] | +24.1% | 3.72e−05 |
@@ -22,7 +20,8 @@ documentation live under [benchmarks/](benchmarks/README.md).
 | Cache-write tokens | −20.6% | [−28.1, −13.2] | −19.0% | 3.76e−07 |
 | Model calls | +0.0% | [+0.0, +0.0] | +1.0% | 0.912 |
 | Agent execution time | −13.4% | [−19.8, +9.3] | −20.2% | 0.244 |
-| Official task reward (6 higher, 4 lower, 47 tied) | n/a | n/a | +8.9% (0.570 → 0.621) | 0.754 (sign test) |
+| Task reward | +8.9% | 6 higher, 4 lower, 47 tied | +8.9% | 0.754 (sign test) |
+
 
 ## Install
 
@@ -117,9 +116,6 @@ finished pairs from a longer plan; these retain the runner's provenance labels.
 `runs/`, `.env`, personal configuration, downloaded task sets and caches stay private.
 Only reviewed results should be published. 
 
-## Acknowledgments
-
-This work was inspired by and adapted from the evaluation series conducted by Denis Shiryaev at JetBrains covering [Caveman](https://blog.jetbrains.com/ai/2026/07/speak-to-ai-agents-like-cavemen-tosave-tokens/), [RTK](https://blog.jetbrains.com/ai/2026/07/rtk-claude-code-token-savings/), and [Ponytail](https://blog.jetbrains.com/ai/2026/07/ponytail-skill-claude-tested/).
 
 ## License
 

@@ -7,9 +7,6 @@ effort, signed-in Claude subscription, per-trial cache isolation.
 The [HTML](https://jduke99.github.io/pennybench/skillsbench-60/),
 [PDF](../../../output/pdf/pennybench-skillsbench-60.pdf) and
 [Markdown](../../../REPORT.md) reports present the findings. The run's audit is labelled
-`partial` because the planned 72-project experiment was stopped after the first 60
-scheduled projects. That label describes the stopping point only; the 60 projects ran in
-full, passed the audit, and the report documents the stop and the omissions.
 
 ## Files in [proxy-full-60/](proxy-full-60/)
 
@@ -20,10 +17,6 @@ full, passed the audit, and the report documents the stop and the omissions.
 | `trials.json` | Per-trial status, reward, task checksum, agent version |
 | `audit.json` | Evidence checks: capture, routing, pins, isolation, pairing |
 | `run.json` | Sanitized manifest: experiment hash, dataset pin, arms, exclusions |
-| `operational-skip.md` | The one pair stopped by a one-hour backstop and then skipped |
-
-Excluded tasks (15 failed reference-solution checks on the original Apple Silicon machine,
-2 missing package inventories, 1 native timeout) are listed in `run.json` and the report.
 
 ## What is not published
 

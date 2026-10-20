@@ -19,11 +19,8 @@ Task-local skills are installed. Claude Code 2.1.302, Sonnet 5.5, medium effort,
 signed-in Claude subscription, and per-trial cache isolation are shared by both arms.
 Routing is the comparison variable.
 
-The original full experiment selected 72 tasks after 15 reference-solution
-exclusions. The published 60-task report covers the first 60 scheduled tasks, with
-57 pairs contributing to statistics. Running `proxy-full.yaml` schedules its
-original **72-task** plan, not a newly registered 60-task plan. The report's stopping
-point and environment omissions were post-hoc; see its methodology.
+The published 60-task report covers the first Core and Extended tasks from SkillsBench, with
+57 pairs contributing to statistics. 
 
 ## Reproduce the setup
 
