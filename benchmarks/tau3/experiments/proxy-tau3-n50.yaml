@@ -1,0 +1,37 @@
+# Registered before any model trial: 50 tasks drawn at random (seed 20261022) from the 375-task pinned set. Not selected on any result.
+id: proxy-tau3-n50
+arms:
+- cc-sonnet-native-login
+- cc-sonnet-proxy-login
+variable: route
+tasks:
+  path: runs/tau3-prep/pinned
+  sha256: 19be236b00d3b469540b84378b7ffc8c3b0aa19ee9d5036a7133df891fa73df9
+sample: 50
+task_skills: without
+cache_isolation: trial
+stage: full
+k: 1
+seed: 20261022
+task_env:
+  secrets: [OPENAI_API_KEY]
+  values:
+    OPENAI_BASE_URL: https://api.openai.com/v1
+    TAU2_USER_MODEL: gpt-5.2
+    TAU2_NL_ASSERTIONS_MODEL: gpt-5.2
+    TAU2_USER_REASONING_EFFORT: low
+endpoints:
+  primary:
+  - cost
+  secondary:
+  - reward
+  - total_tokens
+  - output_tokens
+  - fresh_input_tokens
+  - cache_read_tokens
+  - cache_write_tokens
+  - turns
+  - wall_clock
+quality:
+  test: sign
+  non_inferiority_margin: null
