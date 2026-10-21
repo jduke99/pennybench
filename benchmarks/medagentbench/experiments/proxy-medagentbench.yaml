@@ -1,0 +1,32 @@
+# MedAgentBench (Harbor medagentbench@1.0), all 300 tasks, native vs proxy route.
+# Reference solution verified on task1_1 (arm64, x86 emulation) before registration.
+id: proxy-medagentbench
+arms:
+- cc-sonnet-native-login
+- cc-sonnet-proxy-login
+variable: route
+tasks:
+  path: runs/medagentbench-prep/medagentbench
+  sha256: 169ffdc0d62dd82d1df96e6bd527dfb0a7a3902dccb83fd89c86b6b2c53a74b7
+task_skills: without
+cache_isolation: trial
+task_order: agent_timeout
+cleanup_prebuilt_images: true
+stage: full
+k: 1
+seed: 20261019
+endpoints:
+  primary:
+  - cost
+  secondary:
+  - reward
+  - total_tokens
+  - output_tokens
+  - fresh_input_tokens
+  - cache_read_tokens
+  - cache_write_tokens
+  - turns
+  - wall_clock
+quality:
+  test: sign
+  non_inferiority_margin: null

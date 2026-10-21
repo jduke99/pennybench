@@ -19,7 +19,7 @@ The comparison uses the same Claude Code native and PennyRouter proxy arms as
 SkillsBench, varying only the route. There are no task-local skills in this suite.
 
 Current gate: validate the runner and task reference solutions before registering
-model experiments. No Terminal Bench model results are available yet.
+model experiments. The model run has finished; see [results](results/README.md).
 
 [Timing budgets for every task](TIMING.md) distinguish published timeouts from
 measured local reference runtimes and model-run scheduling scenarios.
@@ -82,8 +82,8 @@ full suite does not need to fit on disk at once.
 The model experiment also removes each prebuilt task image after both arms finish,
 using a non-forced removal. It retains the image between the arms of a pair.
 
-Public reproduction instructions and reviewed results will live here as the
-[suite layout](../README.md) is completed.
+Results are in [results/](results/README.md). Public reproduction instructions
+will live here as the [suite layout](../README.md) is completed.
 
 Reference-only corrections for `build-cython-ext` and `protein-assembly` pass
 their unchanged graders after upstream dependency or public-data drift. The

@@ -1,0 +1,4 @@
+suite = "MedAgentBench"
+registry_dataset = "medagentbench@1.0"
+task_tree_sha256 = "169ffdc0d62dd82d1df96e6bd527dfb0a7a3902dccb83fd89c86b6b2c53a74b7"
+task_count = 300

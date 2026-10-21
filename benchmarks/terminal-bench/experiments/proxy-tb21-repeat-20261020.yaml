@@ -1,0 +1,174 @@
+# Terminal-Bench 2.1 bounded cost study, registered before model trials.
+# 72 resource-eligible candidates; 4 tasks excluded after failed preflight references: 68 tasks, 136 trials.
+# Reference-only compatibility qualifications are documented in ../reference-validation/.
+id: proxy-tb21-repeat-20261020
+arms:
+- cc-sonnet-native-login
+- cc-sonnet-proxy-login
+variable: route
+tasks:
+  path: runs/terminal-bench-prep/source/tasks
+  sha256: 03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0
+include:
+- adaptive-rejection-sampler
+- break-filter-js-from-html
+- build-cython-ext
+- build-pmars
+- cancel-async-tasks
+- chess-best-move
+- cobol-modernization
+- code-from-image
+- configure-git-webserver
+- constraints-scheduling
+- count-dataset-tokens
+- crack-7z-hash
+- custom-memory-heap-crash
+- db-wal-recovery
+- dna-assembly
+- dna-insert
+- extract-elf
+- extract-moves-from-video
+- feal-differential-cryptanalysis
+- feal-linear-cryptanalysis
+- filter-js-from-html
+- financial-document-processor
+- fix-code-vulnerability
+- fix-git
+- gcode-to-text
+- git-leak-recovery
+- git-multibranch
+- gpt2-codegolf
+- headless-terminal
+- hf-model-inference
+- kv-store-grpc
+- large-scale-text-editing
+- largest-eigenval
+- llm-inference-batching-scheduler
+- log-summary-date-ranges
+- mailman
+- make-doom-for-mips
+- make-mips-interpreter
+- mcmc-sampling-stan
+- merge-diff-arc-agi-task
+- model-extraction-relu-logits
+- modernize-scientific-stack
+- mteb-retrieve
+- multi-source-data-merger
+- nginx-request-logging
+- openssl-selfsigned-cert
+- overfull-hbox
+- password-recovery
+- path-tracing
+- path-tracing-reverse
+- polyglot-c-py
+- polyglot-rust-c
+- protein-assembly
+- prove-plus-comm
+- pypi-server
+- pytorch-model-cli
+- pytorch-model-recovery
+- qemu-alpine-ssh
+- qemu-startup
+- query-optimize
+- raman-fitting
+- regex-log
+- rstan-to-pystan
+- sanitize-git-repo
+- sparql-university
+- sqlite-db-truncate
+- sqlite-with-gcov
+- torch-pipeline-parallelism
+- torch-tensor-parallelism
+- tune-mjcf
+- vulnerable-secret
+- write-compressor
+task_skills: without
+cache_isolation: trial
+task_order: agent_timeout
+cleanup_prebuilt_images: true
+exclude:
+- task: bn-fit-modify
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: build-pov-ray
+  reason: agent.timeout_sec=12000 exceeds initial scope limit 1800; verifier.timeout_sec=12000
+    exceeds initial scope limit 1800
+- task: caffe-cifar-10
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800
+- task: circuit-fibsqrt
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: compile-compcert
+  reason: agent.timeout_sec=2400 exceeds initial scope limit 1800; verifier.timeout_sec=2400
+    exceeds initial scope limit 1800
+- task: distribution-search
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: fix-ocaml-gc
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: install-windows-3.11
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: mteb-leaderboard
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: portfolio-optimization
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: regex-chess
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: reshard-c4-data
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: sam-cell-seg
+  reason: agent.timeout_sec=7200 exceeds initial scope limit 1800; verifier.timeout_sec=7200
+    exceeds initial scope limit 1800
+- task: schemelike-metacircular-eval
+  reason: agent.timeout_sec=2400 exceeds initial scope limit 1800; verifier.timeout_sec=2400
+    exceeds initial scope limit 1800
+- task: train-fasttext
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: video-processing
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: winning-avg-corewars
+  reason: agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600
+    exceeds initial scope limit 1800
+- task: mcmc-sampling-stan
+  reason: 'Preflight: unchanged reference fails (cmake missing for RcppParallel); with
+    cmake installed it still fails because the task''s own Stan model uses array syntax
+    that the pinned rstan 2.32.7 stanc rejects. No reference-only repair qualifies the
+    unchanged grader. Excluded symmetrically before model trials.'
+- task: qemu-alpine-ssh
+  reason: 'Preflight: reference QEMU process fails with Rosetta unimplemented syscall
+    282 on this Apple Silicon Docker host; verifier also encounters stale Debian package
+    URLs. Excluded symmetrically before model trials.'
+- task: qemu-startup
+  reason: 'Preflight: reference QEMU process fails with Rosetta unimplemented syscall
+    282 on this Apple Silicon Docker host; verifier also encounters stale Debian package
+    URLs. Excluded symmetrically before model trials.'
+- task: tune-mjcf
+  reason: 'Preflight: unchanged verifier crashes with Fatal Python error: Illegal
+    instruction while importing the native MuJoCo module under x86 emulation on this
+    Apple Silicon host. Excluded symmetrically before model trials.'
+stage: full
+k: 1
+seed: 20261020
+endpoints:
+  primary:
+  - cost
+  secondary:
+  - reward
+  - total_tokens
+  - output_tokens
+  - fresh_input_tokens
+  - cache_read_tokens
+  - cache_write_tokens
+  - turns
+  - wall_clock
+quality:
+  test: sign
+  non_inferiority_margin: null

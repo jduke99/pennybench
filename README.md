@@ -23,6 +23,23 @@ Includes [SkillsBench](https://www.skillsbench.ai/blogs/introducing-skillsbench)
 | Task reward | +8.9% | 6 higher, 4 lower, 47 tied | +8.9% | 0.754 (sign test) |
 
 
+##  Terminal-Bench
+Includes [Terminal-Bench 2.1](https://www.tbench.ai/) tasks with agent and verifier limits of at most 30 minutes and RAM of at most 8 GB (n=68; 57 comparable pairs, one trial per task and arm). See the [data files](benchmarks/terminal-bench/results/README.md) and [full report](benchmarks/terminal-bench/results/proxy-tb21-bounded/REPORT.md).
+
+**Result Overview**
+| Endpoint | Median change | 95% CI, median % | Sum change | P-value |
+| --- | ---: | ---: | ---: | ---: |
+| Total cost | −31.7% | [−35.7, −25.8] | −9.8% | 1.05e−06 |
+| Total tokens | −21.2% | [−22.1, −6.4] | +4.3% | 0.006 |
+| Output tokens | +0.3% | [−1.6, +5.1] | +27.8% | 0.247 |
+| Fresh input tokens | +20.0% | [+0.0, +33.3] | +28.7% | 4.91e−04 |
+| Cache-read tokens | −19.0% | [−20.7, −5.3] | +4.6% | 0.019 |
+| Cache-write tokens | −28.8% | [−33.2, −15.5] | −5.8% | 5.34e−05 |
+| Model calls | +0.0% | [+0.0, +16.7] | +14.8% | 0.125 |
+| Agent execution time | +11.5% | [+2.1, +27.9] | −40.5% | 0.021 |
+| Task reward | n/a | 7 higher, 2 lower, 48 tied | +10.9% | 0.180 (sign test) |
+
+
 ## Install
 
 Work from a clone of this repository. Requirements: Python 3.12, uv, Docker, Claude Code,
@@ -87,6 +104,15 @@ isolated process group while leaving the container available for verification.
 `agent/claude-cleanup.json` records whether a terminal result was seen and whether
 cleanup exceeded the grace period. A completed CLI result does not set the reward;
 the verifier still determines task success.
+
+Reports rebuild failure labels from existing artifacts, including historical runs.
+Each metrics entry has a `failure` field with a category, evidence, the original
+exception type, and a provider message ID when available. Explicit provider
+refusals, authentication/billing/rate limits, environment setup failures, agent
+timeouts, and verifier timeouts are distinguished; unproven causes stay unknown.
+`outcomes.json` and the text report separate scored outcomes from error categories
+and show spending on failed or unscored trials. Rewards and statistical pair
+eligibility remain unchanged. Cost reductions can include failed or unstarted runs.
 
 Each model run prints its artifact directory. Audit and report that exact path:
 
