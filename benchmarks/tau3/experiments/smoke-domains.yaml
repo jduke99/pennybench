@@ -1,0 +1,26 @@
+# Wiring check: one banking_knowledge and one telecom task from the n50 sample, on both routes. Not a measurement.
+id: smoke-domains
+arms:
+- cc-sonnet-native-login
+- cc-sonnet-proxy-login
+variable: route
+tasks:
+  path: runs/tau3-prep/pinned
+  sha256: 19be236b00d3b469540b84378b7ffc8c3b0aa19ee9d5036a7133df891fa73df9
+include:
+- tau3-bench__tau3-banking_knowledge-task-005
+- tau3-bench__tau3-telecom-service-issue-airplane-mode-on-break-apn-settings-contract-end-suspension-unseat-sim-card-persona-easy
+task_skills: without
+cache_isolation: trial
+stage: smoke
+k: 1
+seed: 20261022
+task_env:
+  secrets: [OPENAI_API_KEY]
+  values:
+    OPENAI_BASE_URL: https://api.openai.com/v1
+    TAU2_USER_MODEL: gpt-5.2
+    TAU2_NL_ASSERTIONS_MODEL: gpt-5.2
+    TAU2_USER_REASONING_EFFORT: low
+endpoints:
+  primary: [cost]
