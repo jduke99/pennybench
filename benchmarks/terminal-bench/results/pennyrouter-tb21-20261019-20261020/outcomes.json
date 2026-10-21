@@ -1,0 +1,27 @@
+{
+  "baseline": {
+    "attempts": 136,
+    "successes": 103,
+    "eligible_repetitions": 116,
+    "eligible_cost": 9.6981151,
+    "all_attempt_cost": 14.6416066,
+    "failure_categories": {
+      "agent_timeout": 11,
+      "verifier_timeout": 1
+    }
+  },
+  "treatment": {
+    "attempts": 136,
+    "successes": 104,
+    "eligible_repetitions": 116,
+    "eligible_cost": 8.527708800000001,
+    "all_attempt_cost": 11.3089373,
+    "failure_categories": {
+      "agent_timeout": 7,
+      "provider_safeguard_refusal": 6,
+      "environment_setup_failure": 1,
+      "verifier_timeout": 1
+    }
+  },
+  "eligible_cost_change_pct": -12.068389454359018
+}

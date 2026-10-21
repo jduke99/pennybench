@@ -1,0 +1,1278 @@
+{
+  "experiment": "proxy-tb21-bounded",
+  "experiment_sha256": "b35b73d023128ea05b7cf3ad137b9bf963e9f838d6a587ff58d8c98cff5950c8",
+  "git_sha": "5df0cc67788adf04a1bc10845e4c142ec9b5d5ae",
+  "git_dirty": false,
+  "preregistered": true,
+  "created_at": "2026-10-19T20:19:56.697538+00:00",
+  "harbor_version": "0.24.0",
+  "variable": "route",
+  "tasks": {
+    "path": "runs/terminal-bench-prep/source/tasks",
+    "sha256": "03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0"
+  },
+  "task_skills": "without",
+  "cache_isolation": "trial",
+  "sample": null,
+  "stage": "full",
+  "k": 1,
+  "seed": 20261019,
+  "task_order": "agent_timeout",
+  "cleanup_prebuilt_images": true,
+  "endpoints": {
+    "primary": [
+      "cost"
+    ],
+    "secondary": [
+      "reward",
+      "total_tokens",
+      "output_tokens",
+      "fresh_input_tokens",
+      "cache_read_tokens",
+      "cache_write_tokens",
+      "turns",
+      "wall_clock"
+    ]
+  },
+  "quality": {
+    "test": "sign",
+    "non_inferiority_margin": null
+  },
+  "exclude": [
+    {
+      "task": "bn-fit-modify",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "build-pov-ray",
+      "reason": "agent.timeout_sec=12000 exceeds initial scope limit 1800; verifier.timeout_sec=12000 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "caffe-cifar-10",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "circuit-fibsqrt",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "compile-compcert",
+      "reason": "agent.timeout_sec=2400 exceeds initial scope limit 1800; verifier.timeout_sec=2400 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "distribution-search",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "fix-ocaml-gc",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "install-windows-3.11",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "mteb-leaderboard",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "portfolio-optimization",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "regex-chess",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "reshard-c4-data",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "sam-cell-seg",
+      "reason": "agent.timeout_sec=7200 exceeds initial scope limit 1800; verifier.timeout_sec=7200 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "schemelike-metacircular-eval",
+      "reason": "agent.timeout_sec=2400 exceeds initial scope limit 1800; verifier.timeout_sec=2400 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "train-fasttext",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "video-processing",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "winning-avg-corewars",
+      "reason": "agent.timeout_sec=3600 exceeds initial scope limit 1800; verifier.timeout_sec=3600 exceeds initial scope limit 1800"
+    },
+    {
+      "task": "mcmc-sampling-stan",
+      "reason": "Preflight: unchanged reference fails (cmake missing for RcppParallel); with cmake installed it still fails because the task's own Stan model uses array syntax that the pinned rstan 2.32.7 stanc rejects. No reference-only repair qualifies the unchanged grader. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-alpine-ssh",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "qemu-startup",
+      "reason": "Preflight: reference QEMU process fails with Rosetta unimplemented syscall 282 on this Apple Silicon Docker host; verifier also encounters stale Debian package URLs. Excluded symmetrically before model trials."
+    },
+    {
+      "task": "tune-mjcf",
+      "reason": "Preflight: unchanged verifier crashes with Fatal Python error: Illegal instruction while importing the native MuJoCo module under x86 emulation on this Apple Silicon host. Excluded symmetrically before model trials."
+    }
+  ],
+  "arms": {
+    "baseline": {
+      "id": "cc-sonnet-native-login",
+      "harness": "claude-code",
+      "harness_version": "2.1.302",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "auth": "claude-login",
+      "route": "native",
+      "inject": {
+        "settings_file": "0b9c8be84028a50a3a779bb301a64a1a3cc6d97fa843dcba77d5c4a8e4f6aa23"
+      },
+      "adoption_marker": null,
+      "auth_kind": "claude_login"
+    },
+    "treatment": {
+      "id": "cc-sonnet-proxy-login",
+      "harness": "claude-code",
+      "harness_version": "2.1.302",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "auth": "claude-login",
+      "route": "endpoint:proxy",
+      "inject": {
+        "settings_file": "0b9c8be84028a50a3a779bb301a64a1a3cc6d97fa843dcba77d5c4a8e4f6aa23"
+      },
+      "adoption_marker": null,
+      "endpoint": {
+        "name": "proxy",
+        "base_url": "<local-proxy-endpoint>",
+        "env": {
+          "ENABLE_TOOL_SEARCH": "true"
+        }
+      },
+      "auth_kind": "claude_login"
+    }
+  },
+  "agent_builds": {
+    "2.1.302": {
+      "version": "2.1.302",
+      "arch": "multi",
+      "sha256": {
+        "linux-arm64": "2bd4f4e5ed5cb09955b490098f745321cb5491e7ea8c752ba1e3bb010cdadb10",
+        "linux-arm64-musl": "58dd401b704351f4b70a0bb6faecbc1eb1405057b4dd4cf48a7beae93b4ca143",
+        "linux-x64": "60d7eb7f12fbb28a52533fe8be5884097403562aa02dc73991a021c7067e29a5",
+        "linux-x64-musl": "39395c4d6fef3e38bf59d75890593a5474181c8e96534b54562312503685f787"
+      }
+    }
+  },
+  "task_image_builder": {
+    "name": "pennybench",
+    "cache_cap_gb": 40.0
+  },
+  "capture_hosts": [
+    "api.anthropic.com",
+    "host.docker.internal"
+  ],
+  "egress_capture": null,
+  "plan": [
+    {
+      "pair": 0,
+      "position": 0,
+      "task": "modernize-scientific-stack",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0000-modernize-scientific-stack-r0-baseline"
+    },
+    {
+      "pair": 0,
+      "position": 1,
+      "task": "modernize-scientific-stack",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0000-modernize-scientific-stack-r0-treatment"
+    },
+    {
+      "pair": 1,
+      "position": 0,
+      "task": "overfull-hbox",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0001-overfull-hbox-r0-treatment"
+    },
+    {
+      "pair": 1,
+      "position": 1,
+      "task": "overfull-hbox",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0001-overfull-hbox-r0-baseline"
+    },
+    {
+      "pair": 2,
+      "position": 0,
+      "task": "torch-tensor-parallelism",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0002-torch-tensor-parallelism-r0-baseline"
+    },
+    {
+      "pair": 2,
+      "position": 1,
+      "task": "torch-tensor-parallelism",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0002-torch-tensor-parallelism-r0-treatment"
+    },
+    {
+      "pair": 3,
+      "position": 0,
+      "task": "git-multibranch",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0003-git-multibranch-r0-treatment"
+    },
+    {
+      "pair": 3,
+      "position": 1,
+      "task": "git-multibranch",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0003-git-multibranch-r0-baseline"
+    },
+    {
+      "pair": 4,
+      "position": 0,
+      "task": "build-pmars",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0004-build-pmars-r0-baseline"
+    },
+    {
+      "pair": 4,
+      "position": 1,
+      "task": "build-pmars",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0004-build-pmars-r0-treatment"
+    },
+    {
+      "pair": 5,
+      "position": 0,
+      "task": "largest-eigenval",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0005-largest-eigenval-r0-treatment"
+    },
+    {
+      "pair": 5,
+      "position": 1,
+      "task": "largest-eigenval",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0005-largest-eigenval-r0-baseline"
+    },
+    {
+      "pair": 6,
+      "position": 0,
+      "task": "sparql-university",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0006-sparql-university-r0-baseline"
+    },
+    {
+      "pair": 6,
+      "position": 1,
+      "task": "sparql-university",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0006-sparql-university-r0-treatment"
+    },
+    {
+      "pair": 7,
+      "position": 0,
+      "task": "make-doom-for-mips",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0007-make-doom-for-mips-r0-treatment"
+    },
+    {
+      "pair": 7,
+      "position": 1,
+      "task": "make-doom-for-mips",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0007-make-doom-for-mips-r0-baseline"
+    },
+    {
+      "pair": 8,
+      "position": 0,
+      "task": "db-wal-recovery",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0008-db-wal-recovery-r0-baseline"
+    },
+    {
+      "pair": 8,
+      "position": 1,
+      "task": "db-wal-recovery",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0008-db-wal-recovery-r0-treatment"
+    },
+    {
+      "pair": 9,
+      "position": 0,
+      "task": "nginx-request-logging",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0009-nginx-request-logging-r0-treatment"
+    },
+    {
+      "pair": 9,
+      "position": 1,
+      "task": "nginx-request-logging",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0009-nginx-request-logging-r0-baseline"
+    },
+    {
+      "pair": 10,
+      "position": 0,
+      "task": "build-cython-ext",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0010-build-cython-ext-r0-baseline"
+    },
+    {
+      "pair": 10,
+      "position": 1,
+      "task": "build-cython-ext",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0010-build-cython-ext-r0-treatment"
+    },
+    {
+      "pair": 11,
+      "position": 0,
+      "task": "openssl-selfsigned-cert",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0011-openssl-selfsigned-cert-r0-treatment"
+    },
+    {
+      "pair": 11,
+      "position": 1,
+      "task": "openssl-selfsigned-cert",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0011-openssl-selfsigned-cert-r0-baseline"
+    },
+    {
+      "pair": 12,
+      "position": 0,
+      "task": "hf-model-inference",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0012-hf-model-inference-r0-baseline"
+    },
+    {
+      "pair": 12,
+      "position": 1,
+      "task": "hf-model-inference",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0012-hf-model-inference-r0-treatment"
+    },
+    {
+      "pair": 13,
+      "position": 0,
+      "task": "polyglot-c-py",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0013-polyglot-c-py-r0-treatment"
+    },
+    {
+      "pair": 13,
+      "position": 1,
+      "task": "polyglot-c-py",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0013-polyglot-c-py-r0-baseline"
+    },
+    {
+      "pair": 14,
+      "position": 0,
+      "task": "kv-store-grpc",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0014-kv-store-grpc-r0-baseline"
+    },
+    {
+      "pair": 14,
+      "position": 1,
+      "task": "kv-store-grpc",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0014-kv-store-grpc-r0-treatment"
+    },
+    {
+      "pair": 15,
+      "position": 0,
+      "task": "model-extraction-relu-logits",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0015-model-extraction-relu-logits-r0-treatment"
+    },
+    {
+      "pair": 15,
+      "position": 1,
+      "task": "model-extraction-relu-logits",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0015-model-extraction-relu-logits-r0-baseline"
+    },
+    {
+      "pair": 16,
+      "position": 0,
+      "task": "pytorch-model-recovery",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0016-pytorch-model-recovery-r0-baseline"
+    },
+    {
+      "pair": 16,
+      "position": 1,
+      "task": "pytorch-model-recovery",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0016-pytorch-model-recovery-r0-treatment"
+    },
+    {
+      "pair": 17,
+      "position": 0,
+      "task": "regex-log",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0017-regex-log-r0-treatment"
+    },
+    {
+      "pair": 17,
+      "position": 1,
+      "task": "regex-log",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0017-regex-log-r0-baseline"
+    },
+    {
+      "pair": 18,
+      "position": 0,
+      "task": "multi-source-data-merger",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0018-multi-source-data-merger-r0-baseline"
+    },
+    {
+      "pair": 18,
+      "position": 1,
+      "task": "multi-source-data-merger",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0018-multi-source-data-merger-r0-treatment"
+    },
+    {
+      "pair": 19,
+      "position": 0,
+      "task": "vulnerable-secret",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0019-vulnerable-secret-r0-treatment"
+    },
+    {
+      "pair": 19,
+      "position": 1,
+      "task": "vulnerable-secret",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0019-vulnerable-secret-r0-baseline"
+    },
+    {
+      "pair": 20,
+      "position": 0,
+      "task": "count-dataset-tokens",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0020-count-dataset-tokens-r0-baseline"
+    },
+    {
+      "pair": 20,
+      "position": 1,
+      "task": "count-dataset-tokens",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0020-count-dataset-tokens-r0-treatment"
+    },
+    {
+      "pair": 21,
+      "position": 0,
+      "task": "raman-fitting",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0021-raman-fitting-r0-treatment"
+    },
+    {
+      "pair": 21,
+      "position": 1,
+      "task": "raman-fitting",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0021-raman-fitting-r0-baseline"
+    },
+    {
+      "pair": 22,
+      "position": 0,
+      "task": "pytorch-model-cli",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0022-pytorch-model-cli-r0-baseline"
+    },
+    {
+      "pair": 22,
+      "position": 1,
+      "task": "pytorch-model-cli",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0022-pytorch-model-cli-r0-treatment"
+    },
+    {
+      "pair": 23,
+      "position": 0,
+      "task": "sqlite-with-gcov",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0023-sqlite-with-gcov-r0-treatment"
+    },
+    {
+      "pair": 23,
+      "position": 1,
+      "task": "sqlite-with-gcov",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0023-sqlite-with-gcov-r0-baseline"
+    },
+    {
+      "pair": 24,
+      "position": 0,
+      "task": "fix-git",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0024-fix-git-r0-baseline"
+    },
+    {
+      "pair": 24,
+      "position": 1,
+      "task": "fix-git",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0024-fix-git-r0-treatment"
+    },
+    {
+      "pair": 25,
+      "position": 0,
+      "task": "cobol-modernization",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0025-cobol-modernization-r0-treatment"
+    },
+    {
+      "pair": 25,
+      "position": 1,
+      "task": "cobol-modernization",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0025-cobol-modernization-r0-baseline"
+    },
+    {
+      "pair": 26,
+      "position": 0,
+      "task": "merge-diff-arc-agi-task",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0026-merge-diff-arc-agi-task-r0-baseline"
+    },
+    {
+      "pair": 26,
+      "position": 1,
+      "task": "merge-diff-arc-agi-task",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0026-merge-diff-arc-agi-task-r0-treatment"
+    },
+    {
+      "pair": 27,
+      "position": 0,
+      "task": "polyglot-rust-c",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0027-polyglot-rust-c-r0-treatment"
+    },
+    {
+      "pair": 27,
+      "position": 1,
+      "task": "polyglot-rust-c",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0027-polyglot-rust-c-r0-baseline"
+    },
+    {
+      "pair": 28,
+      "position": 0,
+      "task": "torch-pipeline-parallelism",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0028-torch-pipeline-parallelism-r0-baseline"
+    },
+    {
+      "pair": 28,
+      "position": 1,
+      "task": "torch-pipeline-parallelism",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0028-torch-pipeline-parallelism-r0-treatment"
+    },
+    {
+      "pair": 29,
+      "position": 0,
+      "task": "git-leak-recovery",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0029-git-leak-recovery-r0-treatment"
+    },
+    {
+      "pair": 29,
+      "position": 1,
+      "task": "git-leak-recovery",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0029-git-leak-recovery-r0-baseline"
+    },
+    {
+      "pair": 30,
+      "position": 0,
+      "task": "pypi-server",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0030-pypi-server-r0-baseline"
+    },
+    {
+      "pair": 30,
+      "position": 1,
+      "task": "pypi-server",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0030-pypi-server-r0-treatment"
+    },
+    {
+      "pair": 31,
+      "position": 0,
+      "task": "extract-elf",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0031-extract-elf-r0-treatment"
+    },
+    {
+      "pair": 31,
+      "position": 1,
+      "task": "extract-elf",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0031-extract-elf-r0-baseline"
+    },
+    {
+      "pair": 32,
+      "position": 0,
+      "task": "prove-plus-comm",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0032-prove-plus-comm-r0-baseline"
+    },
+    {
+      "pair": 32,
+      "position": 1,
+      "task": "prove-plus-comm",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0032-prove-plus-comm-r0-treatment"
+    },
+    {
+      "pair": 33,
+      "position": 0,
+      "task": "gcode-to-text",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0033-gcode-to-text-r0-treatment"
+    },
+    {
+      "pair": 33,
+      "position": 1,
+      "task": "gcode-to-text",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0033-gcode-to-text-r0-baseline"
+    },
+    {
+      "pair": 34,
+      "position": 0,
+      "task": "chess-best-move",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0034-chess-best-move-r0-baseline"
+    },
+    {
+      "pair": 34,
+      "position": 1,
+      "task": "chess-best-move",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0034-chess-best-move-r0-treatment"
+    },
+    {
+      "pair": 35,
+      "position": 0,
+      "task": "cancel-async-tasks",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0035-cancel-async-tasks-r0-treatment"
+    },
+    {
+      "pair": 35,
+      "position": 1,
+      "task": "cancel-async-tasks",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0035-cancel-async-tasks-r0-baseline"
+    },
+    {
+      "pair": 36,
+      "position": 0,
+      "task": "sqlite-db-truncate",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0036-sqlite-db-truncate-r0-baseline"
+    },
+    {
+      "pair": 36,
+      "position": 1,
+      "task": "sqlite-db-truncate",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0036-sqlite-db-truncate-r0-treatment"
+    },
+    {
+      "pair": 37,
+      "position": 0,
+      "task": "write-compressor",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0037-write-compressor-r0-treatment"
+    },
+    {
+      "pair": 37,
+      "position": 1,
+      "task": "write-compressor",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0037-write-compressor-r0-baseline"
+    },
+    {
+      "pair": 38,
+      "position": 0,
+      "task": "headless-terminal",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0038-headless-terminal-r0-baseline"
+    },
+    {
+      "pair": 38,
+      "position": 1,
+      "task": "headless-terminal",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0038-headless-terminal-r0-treatment"
+    },
+    {
+      "pair": 39,
+      "position": 0,
+      "task": "log-summary-date-ranges",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0039-log-summary-date-ranges-r0-treatment"
+    },
+    {
+      "pair": 39,
+      "position": 1,
+      "task": "log-summary-date-ranges",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0039-log-summary-date-ranges-r0-baseline"
+    },
+    {
+      "pair": 40,
+      "position": 0,
+      "task": "password-recovery",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0040-password-recovery-r0-baseline"
+    },
+    {
+      "pair": 40,
+      "position": 1,
+      "task": "password-recovery",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0040-password-recovery-r0-treatment"
+    },
+    {
+      "pair": 41,
+      "position": 0,
+      "task": "adaptive-rejection-sampler",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0041-adaptive-rejection-sampler-r0-treatment"
+    },
+    {
+      "pair": 41,
+      "position": 1,
+      "task": "adaptive-rejection-sampler",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0041-adaptive-rejection-sampler-r0-baseline"
+    },
+    {
+      "pair": 42,
+      "position": 0,
+      "task": "configure-git-webserver",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0042-configure-git-webserver-r0-baseline"
+    },
+    {
+      "pair": 42,
+      "position": 1,
+      "task": "configure-git-webserver",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0042-configure-git-webserver-r0-treatment"
+    },
+    {
+      "pair": 43,
+      "position": 0,
+      "task": "fix-code-vulnerability",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0043-fix-code-vulnerability-r0-treatment"
+    },
+    {
+      "pair": 43,
+      "position": 1,
+      "task": "fix-code-vulnerability",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0043-fix-code-vulnerability-r0-baseline"
+    },
+    {
+      "pair": 44,
+      "position": 0,
+      "task": "sanitize-git-repo",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0044-sanitize-git-repo-r0-baseline"
+    },
+    {
+      "pair": 44,
+      "position": 1,
+      "task": "sanitize-git-repo",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0044-sanitize-git-repo-r0-treatment"
+    },
+    {
+      "pair": 45,
+      "position": 0,
+      "task": "gpt2-codegolf",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0045-gpt2-codegolf-r0-treatment"
+    },
+    {
+      "pair": 45,
+      "position": 1,
+      "task": "gpt2-codegolf",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0045-gpt2-codegolf-r0-baseline"
+    },
+    {
+      "pair": 46,
+      "position": 0,
+      "task": "query-optimize",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0046-query-optimize-r0-baseline"
+    },
+    {
+      "pair": 46,
+      "position": 1,
+      "task": "query-optimize",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0046-query-optimize-r0-treatment"
+    },
+    {
+      "pair": 47,
+      "position": 0,
+      "task": "code-from-image",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0047-code-from-image-r0-treatment"
+    },
+    {
+      "pair": 47,
+      "position": 1,
+      "task": "code-from-image",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0047-code-from-image-r0-baseline"
+    },
+    {
+      "pair": 48,
+      "position": 0,
+      "task": "large-scale-text-editing",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0048-large-scale-text-editing-r0-baseline"
+    },
+    {
+      "pair": 48,
+      "position": 1,
+      "task": "large-scale-text-editing",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0048-large-scale-text-editing-r0-treatment"
+    },
+    {
+      "pair": 49,
+      "position": 0,
+      "task": "constraints-scheduling",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0049-constraints-scheduling-r0-treatment"
+    },
+    {
+      "pair": 49,
+      "position": 1,
+      "task": "constraints-scheduling",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0049-constraints-scheduling-r0-baseline"
+    },
+    {
+      "pair": 50,
+      "position": 0,
+      "task": "financial-document-processor",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0050-financial-document-processor-r0-baseline"
+    },
+    {
+      "pair": 50,
+      "position": 1,
+      "task": "financial-document-processor",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0050-financial-document-processor-r0-treatment"
+    },
+    {
+      "pair": 51,
+      "position": 0,
+      "task": "break-filter-js-from-html",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0051-break-filter-js-from-html-r0-treatment"
+    },
+    {
+      "pair": 51,
+      "position": 1,
+      "task": "break-filter-js-from-html",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0051-break-filter-js-from-html-r0-baseline"
+    },
+    {
+      "pair": 52,
+      "position": 0,
+      "task": "crack-7z-hash",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0052-crack-7z-hash-r0-baseline"
+    },
+    {
+      "pair": 52,
+      "position": 1,
+      "task": "crack-7z-hash",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0052-crack-7z-hash-r0-treatment"
+    },
+    {
+      "pair": 53,
+      "position": 0,
+      "task": "path-tracing-reverse",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0053-path-tracing-reverse-r0-treatment"
+    },
+    {
+      "pair": 53,
+      "position": 1,
+      "task": "path-tracing-reverse",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0053-path-tracing-reverse-r0-baseline"
+    },
+    {
+      "pair": 54,
+      "position": 0,
+      "task": "llm-inference-batching-scheduler",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0054-llm-inference-batching-scheduler-r0-baseline"
+    },
+    {
+      "pair": 54,
+      "position": 1,
+      "task": "llm-inference-batching-scheduler",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0054-llm-inference-batching-scheduler-r0-treatment"
+    },
+    {
+      "pair": 55,
+      "position": 0,
+      "task": "rstan-to-pystan",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0055-rstan-to-pystan-r0-treatment"
+    },
+    {
+      "pair": 55,
+      "position": 1,
+      "task": "rstan-to-pystan",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0055-rstan-to-pystan-r0-baseline"
+    },
+    {
+      "pair": 56,
+      "position": 0,
+      "task": "custom-memory-heap-crash",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0056-custom-memory-heap-crash-r0-baseline"
+    },
+    {
+      "pair": 56,
+      "position": 1,
+      "task": "custom-memory-heap-crash",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0056-custom-memory-heap-crash-r0-treatment"
+    },
+    {
+      "pair": 57,
+      "position": 0,
+      "task": "feal-linear-cryptanalysis",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0057-feal-linear-cryptanalysis-r0-treatment"
+    },
+    {
+      "pair": 57,
+      "position": 1,
+      "task": "feal-linear-cryptanalysis",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0057-feal-linear-cryptanalysis-r0-baseline"
+    },
+    {
+      "pair": 58,
+      "position": 0,
+      "task": "protein-assembly",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0058-protein-assembly-r0-baseline"
+    },
+    {
+      "pair": 58,
+      "position": 1,
+      "task": "protein-assembly",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0058-protein-assembly-r0-treatment"
+    },
+    {
+      "pair": 59,
+      "position": 0,
+      "task": "path-tracing",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0059-path-tracing-r0-treatment"
+    },
+    {
+      "pair": 59,
+      "position": 1,
+      "task": "path-tracing",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0059-path-tracing-r0-baseline"
+    },
+    {
+      "pair": 60,
+      "position": 0,
+      "task": "dna-assembly",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0060-dna-assembly-r0-baseline"
+    },
+    {
+      "pair": 60,
+      "position": 1,
+      "task": "dna-assembly",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0060-dna-assembly-r0-treatment"
+    },
+    {
+      "pair": 61,
+      "position": 0,
+      "task": "filter-js-from-html",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0061-filter-js-from-html-r0-treatment"
+    },
+    {
+      "pair": 61,
+      "position": 1,
+      "task": "filter-js-from-html",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0061-filter-js-from-html-r0-baseline"
+    },
+    {
+      "pair": 62,
+      "position": 0,
+      "task": "mailman",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0062-mailman-r0-baseline"
+    },
+    {
+      "pair": 62,
+      "position": 1,
+      "task": "mailman",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0062-mailman-r0-treatment"
+    },
+    {
+      "pair": 63,
+      "position": 0,
+      "task": "feal-differential-cryptanalysis",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0063-feal-differential-cryptanalysis-r0-treatment"
+    },
+    {
+      "pair": 63,
+      "position": 1,
+      "task": "feal-differential-cryptanalysis",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0063-feal-differential-cryptanalysis-r0-baseline"
+    },
+    {
+      "pair": 64,
+      "position": 0,
+      "task": "extract-moves-from-video",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0064-extract-moves-from-video-r0-baseline"
+    },
+    {
+      "pair": 64,
+      "position": 1,
+      "task": "extract-moves-from-video",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0064-extract-moves-from-video-r0-treatment"
+    },
+    {
+      "pair": 65,
+      "position": 0,
+      "task": "make-mips-interpreter",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0065-make-mips-interpreter-r0-treatment"
+    },
+    {
+      "pair": 65,
+      "position": 1,
+      "task": "make-mips-interpreter",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0065-make-mips-interpreter-r0-baseline"
+    },
+    {
+      "pair": 66,
+      "position": 0,
+      "task": "dna-insert",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0066-dna-insert-r0-baseline"
+    },
+    {
+      "pair": 66,
+      "position": 1,
+      "task": "dna-insert",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0066-dna-insert-r0-treatment"
+    },
+    {
+      "pair": 67,
+      "position": 0,
+      "task": "mteb-retrieve",
+      "rep": 0,
+      "role": "treatment",
+      "trial_id": "0067-mteb-retrieve-r0-treatment"
+    },
+    {
+      "pair": 67,
+      "position": 1,
+      "task": "mteb-retrieve",
+      "rep": 0,
+      "role": "baseline",
+      "trial_id": "0067-mteb-retrieve-r0-baseline"
+    }
+  ],
+  "reference_preflight_sha256": "0ad61978bc0414b430fd23f7d1ed4533b06c7c6c64b457e1db60ac66b7288638",
+  "gateway_source_commit": "a2b24de64ad556376936a931ebc5e85c7f362ec2",
+  "login_min_valid_minutes": 5
+}

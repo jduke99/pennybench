@@ -1,0 +1,35 @@
+{
+  "analysis": "Post-hoc pooling of two independent k=1 runs; not a preregistered k=2 experiment.",
+  "runs": [
+    {
+      "publication_name": "pennyrouter-tb21-20261019",
+      "experiment": "proxy-tb21-bounded",
+      "created_at": "2026-10-19T20:19:56.697538+00:00",
+      "preregistered": true,
+      "manifest_sha256": "362002ca19ced19a262124974814454dd6d52d1943151899d53079545cb2297d",
+      "metrics_sha256": "007062a544b543ca2572e23e4c56117a0ae36f823ad3b2a0424402d6fd8d7650",
+      "audit_passed": true,
+      "trials": 136
+    },
+    {
+      "publication_name": "pennyrouter-tb21-20261020",
+      "experiment": "proxy-tb21-repeat-20261020",
+      "created_at": "2026-10-20T16:07:01.761276+00:00",
+      "preregistered": false,
+      "manifest_sha256": "17eeff4117e611ed23cf7dc3916b8ded701bf1aa2e7880da8f88e259a577571e",
+      "metrics_sha256": "0d6c8037523b4130146e80d0f8022c1b5bca7e576cb8a8a77970c7add41b0436",
+      "audit_passed": true,
+      "trials": 136
+    }
+  ],
+  "unit": "Task; each arm uses its median across eligible repetitions.",
+  "eligibility": "Both arm statuses must be complete for a task-repetition.",
+  "eligible_task_repetitions": 116,
+  "excluded_task_repetitions": 20,
+  "tasks_both_repetitions": 53,
+  "tasks_one_repetition": 10,
+  "tasks_neither_repetition": 5,
+  "bootstrap_seed": 20261020,
+  "actual_spending": "Sum across all eligible task-repetitions.",
+  "table_sum": "Sum of per-task arm medians; each task contributes once."
+}

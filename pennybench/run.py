@@ -20,7 +20,9 @@ from pennybench.claude_login import (StagedLogin, ensure_login, probe_usage, rem
                                      sweep_leftovers, usage_stop_reason)
 from pennybench.harbor_agent import IMPORT_PATH as SIGNED_IN_AGENT
 from pennybench.config import LocalConfig
-from pennybench.harbor import harbor_command, harbor_version, run_harbor, task_timeout_s
+from pennybench.harbor import (harbor_command, harbor_version, run_harbor, sidecar_hosts,
+                               task_timeout_s)
+from pennybench.hostenv import host_home
 from pennybench.plan import PlannedTrial, plan_trials
 from pennybench.digest import file_sha256
 from pennybench.environment import (record_environment, remove_stray_containers,
@@ -163,6 +165,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
         "cleanup_prebuilt_images": experiment.cleanup_prebuilt_images,
         "endpoints": experiment.endpoints,
         "quality": experiment.quality,
+        "task_env": experiment.task_env.record(),
         "exclude": [{"task": e.task, "reason": e.reason} for e in experiment.exclude],
         "arms": {role: _arm_record(arm, config, experiment.root)
                  for role, arm in experiment.arms.items()},
@@ -173,7 +176,7 @@ def start_run(experiment: Experiment, config: LocalConfig, environ: Mapping[str,
                            if (e := egress_endpoint(experiment, config)) else None),
         # The isolation audit looks for this path in request bytes: a hit means host files or
         # config reached the model.
-        "host_home": environ.get("HOME", ""),
+        "host_home": host_home(environ),
         "plan": [t.to_json() for t in plan_trials(experiment)],
     }
     (run_dir / "run.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -214,7 +217,8 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
     trial_env = build_trial_env(arm, config, environ)
     profile = config.auth_profile(arm.auth)
     login = ensure_login(profile.min_valid_minutes) if profile.kind == "claude_login" else None
-    secrets = trial_env.secrets + (login.secrets if login else ())
+    task_host_env, task_secrets = experiment.task_env.host_env(environ)
+    secrets = trial_env.secrets + task_secrets + (login.secrets if login else ())
     build = ensure_claude_code(arm.harness_version, agent_cache_root(config))
     capture = WireCapture(trial_dir / "wire", experiment_capture_hosts(experiment, config),
                           config.store / ".mitmproxy")
@@ -225,14 +229,15 @@ def run_trial(trial: PlannedTrial, experiment: Experiment, config: LocalConfig,
         # Created inside the try so the copy is always removed, whatever fails after this.
         staged = StagedLogin(login) if login else None
         argv = harbor_command(arm, task_dir, trial_dir / "harbor", trial_env, experiment.root,
-                              {**capture.agent_env(), **RUNNER_AGENT_ENV},
+                              {**capture.agent_env(tuple(sidecar_hosts(task_dir))), **RUNNER_AGENT_ENV},
                               capture.mounts() + build.mounts()
                               + (staged.mounts() if staged else []), skills,
                               cache_isolation_line(nonce) if nonce else None,
                               agent=SIGNED_IN_AGENT if login else None)
         started = _now()
         t0 = time.monotonic()
-        host_env = {**trial_env.host_env, **(config.builder.env() if config.builder else {})}
+        host_env = {**trial_env.host_env, **task_host_env,
+                    **(config.builder.env() if config.builder else {})}
         outcome = run_harbor(argv, host_env, trial_dir / "harbor", trial_dir / "harbor.log",
                              timeout_s=task_timeout_s(task_dir))
         wall = time.monotonic() - t0

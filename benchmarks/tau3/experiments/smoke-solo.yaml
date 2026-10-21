@@ -1,0 +1,26 @@
+# Wiring check: one signed-in Claude Code arm on two tau3 tasks. Not a measurement.
+# The user simulator and grader run in the task's own containers on OPENAI_API_KEY; the
+# agent runs on the claude.ai login. Their settings are pinned here, not left to task defaults.
+id: smoke-solo
+arms: [cc-sonnet-native-login]
+tasks:
+  path: runs/tau3-prep/pinned
+  sha256: 19be236b00d3b469540b84378b7ffc8c3b0aa19ee9d5036a7133df891fa73df9
+include:
+- tau3-bench__tau3-airline-0
+- tau3-bench__tau3-retail-0
+task_skills: without
+cache_isolation: trial
+stage: audit
+k: 1
+seed: 20261021
+task_env:
+  secrets: [OPENAI_API_KEY]
+  values:
+    # The task templates require a value; this is OpenAI's own endpoint.
+    OPENAI_BASE_URL: https://api.openai.com/v1
+    TAU2_USER_MODEL: gpt-5.2
+    TAU2_NL_ASSERTIONS_MODEL: gpt-5.2
+    TAU2_USER_REASONING_EFFORT: low
+endpoints:
+  primary: [cost]

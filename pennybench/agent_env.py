@@ -12,12 +12,8 @@ from dataclasses import dataclass
 from typing import Mapping
 
 from pennybench.config import ConfigError, LocalConfig
+from pennybench.hostenv import HOST_PASSTHROUGH  # noqa: F401  (re-exported)
 from pennybench.spec import Arm
-
-HOST_PASSTHROUGH = (
-    "PATH", "HOME", "USER", "LOGNAME", "TMPDIR", "LANG", "LC_ALL",
-    "DOCKER_HOST", "DOCKER_CONFIG", "DOCKER_CONTEXT", "SSL_CERT_FILE",
-)
 
 UPSTREAM_SECRET = "PENNYBENCH_SECRET_UPSTREAM"
 ENDPOINT_SECRET = "PENNYBENCH_SECRET_ENDPOINT"

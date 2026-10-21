@@ -6,7 +6,9 @@ harness](https://github.com/harbor-framework/harbor) framework including task ve
 This work was inspired by and adapted from the [evaluation series](https://blog.jetbrains.com/ai/2026/07/ponytail-skill-claude-tested/) conducted by JetBrains' [Denis Shiryaev](https://blog.jetbrains.com/author/denis-shiryaev-jetbrains-com) on RTK, Caveman, and Ponytail.
 
 ##  SkillsBench
-Includes [SkillsBench](https://www.skillsbench.ai/blogs/introducing-skillsbench) Core and Extended tasks (n=60), excludes Extreme tasks (>4hr timeout, n=26). See [glossy report](https://jduke99.github.io/pennybench/skillsbench-60/) and [data files](benchmarks/skillsbench/README.md).
+Includes [SkillsBench](https://www.skillsbench.ai/blogs/introducing-skillsbench) Core and Extended tasks (n=60), excludes Extreme tasks (>4hr timeout, n=26). 
+
+See **[Results Report](https://jduke99.github.io/pennybench/pennyrouter-skillsbench-20261019/) and [Data Files](benchmarks/skillsbench/README.md)**.
 
 
 **Result Overview**
@@ -20,25 +22,26 @@ Includes [SkillsBench](https://www.skillsbench.ai/blogs/introducing-skillsbench)
 | Cache-write tokens | −20.6% | [−28.1, −13.2] | −19.0% | 3.76e−07 |
 | Model calls | +0.0% | [+0.0, +0.0] | +1.0% | 0.912 |
 | Agent execution time | −13.4% | [−19.8, +9.3] | −20.2% | 0.244 |
-| Task reward | +8.9% | 6 higher, 4 lower, 47 tied | +8.9% | 0.754 (sign test) |
+| Task reward | +8.9% | 6 higher, 4 lower, 47 tied | +8.9% | 0.754 |
 
 
-##  Terminal-Bench
-Includes [Terminal-Bench 2.1](https://www.tbench.ai/) tasks with agent and verifier limits of at most 30 minutes and RAM of at most 8 GB (n=68; 57 comparable pairs, one trial per task and arm). See the [data files](benchmarks/terminal-bench/results/README.md) and [full report](benchmarks/terminal-bench/results/proxy-tb21-bounded/REPORT.md).
+## Terminal-Bench 2.1
+Includes [Terminal Bench](https://www.tbench.ai/?agents=Terminus%202&version=2.1) tasks with agent timeout ≤30 minutes (n=72), with 4 excluded due to reference failure, making final task set n=68. Two independent runs conducted.
+
+See **[Results Report](https://jduke99.github.io/pennybench/pennyrouter-tb21-20261019-20261020/) and [Data Files](benchmarks/terminal-bench/results/README.md)**.
 
 **Result Overview**
-| Endpoint | Median change | 95% CI, median % | Sum change | P-value |
+| Endpoint | Median change | 95% CI, median % | Sum of task medians | P-value |
 | --- | ---: | ---: | ---: | ---: |
-| Total cost | −31.7% | [−35.7, −25.8] | −9.8% | 1.05e−06 |
-| Total tokens | −21.2% | [−22.1, −6.4] | +4.3% | 0.006 |
-| Output tokens | +0.3% | [−1.6, +5.1] | +27.8% | 0.247 |
-| Fresh input tokens | +20.0% | [+0.0, +33.3] | +28.7% | 4.91e−04 |
-| Cache-read tokens | −19.0% | [−20.7, −5.3] | +4.6% | 0.019 |
-| Cache-write tokens | −28.8% | [−33.2, −15.5] | −5.8% | 5.34e−05 |
-| Model calls | +0.0% | [+0.0, +16.7] | +14.8% | 0.125 |
-| Agent execution time | +11.5% | [+2.1, +27.9] | −40.5% | 0.021 |
-| Task reward | n/a | 7 higher, 2 lower, 48 tied | +10.9% | 0.180 (sign test) |
-
+| Total cost | -31.1% | [-35.2, -25.5] | -10.4% | 5.05e-08 |
+| Total tokens | -20.9% | [-23.0, -9.8] | +7.7% | 8.99e-04 |
+| Output tokens | +0.9% | [-2.3, +13.7] | +25.1% | 0.056 |
+| Fresh input tokens | +16.7% | [+0.0, +25.0] | -81.4% | 1.25e-04 |
+| Cache-read tokens | -19.6% | [-21.6, -7.8] | +8.8% | 0.002 |
+| Cache-write tokens | -24.4% | [-34.4, -14.4] | -7.2% | 1.83e-06 |
+| Model calls | +0.0% | [+0.0, +16.7] | +15.9% | 0.050 |
+| Agent execution time | +12.9% | [+4.9, +21.5] | -25.3% | 0.011 |
+| Task reward | +4.0% | 11 higher, 6 lower, 46 tied | +4.0% | 0.332 |
 
 ## Install
 
@@ -144,7 +147,6 @@ finished pairs from a longer plan; these retain the runner's provenance labels.
 - [Architecture](DESIGN.md): the shared measurement design.
 - [Contributing](CONTRIBUTING.md): tests and experiment changes.
 - [Privacy and credentials](SECURITY.md): what must remain private.
-- [Publication checklist](docs/PUBLICATION.md): staged public-repository preparation.
 
 `runs/`, `.env`, personal configuration, downloaded task sets and caches stay private.
 Only reviewed results should be published. 

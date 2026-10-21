@@ -6,6 +6,7 @@ definitions, compatibility notes, and results documentation. No suite forks the 
 | Suite | Entry point |
 | --- | --- |
 | SkillsBench | [60-task report, provenance and reproduction](skillsbench/README.md) |
+| Terminal-Bench 2.1 | [Pooled 68-task report, provenance and reproduction](terminal-bench/README.md) |
 
 ```text
 pennybench/                    shared runner, capture, audit, metrics and statistics
@@ -33,6 +34,5 @@ The checked-in configuration example uses hosted PennyRouter. A custom HTTPS
 endpoint can be configured for a private server. Each reader supplies their own
 subscription or API credentials; see [the auth guide](../docs/CREDENTIALS.md).
 
-Before public release, follow the [publication checklist](../docs/PUBLICATION.md).
 Raw captures and agent transcripts are private by default. Packaging does not change
 remote visibility, run any experiments, or decide licensing.

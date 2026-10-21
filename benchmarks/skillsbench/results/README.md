@@ -4,11 +4,14 @@ Published data for the PennyRouter evaluation: `cc-sonnet-native-login` (baselin
 `cc-sonnet-proxy-login` (hosted PennyRouter), both Claude Code 2.1.302, Sonnet 5.5, medium
 effort, signed-in Claude subscription, per-trial cache isolation.
 
-The [HTML](https://jduke99.github.io/pennybench/skillsbench-60/),
-[PDF](../../../output/pdf/pennybench-skillsbench-60.pdf) and
-[Markdown](../../../REPORT.md) reports present the findings. The run's audit is labelled
+The [HTML](https://jduke99.github.io/pennybench/pennyrouter-skillsbench-20261019/),
+[PDF](../../../output/pdf/pennyrouter-skillsbench-20261019.pdf) and
+[Markdown](../../../REPORT.md) reports present the findings. The retained evidence passed its partial audit;
+the stopped evaluation and post-hoc subset are not a preregistered subset claim.
+The publication folder is `pennyrouter-skillsbench-20261019` (UTC run date).
+Historical experiment IDs inside the data are preserved for traceability.
 
-## Files in [proxy-full-60/](proxy-full-60/)
+## Files in [pennyrouter-skillsbench-20261019/](pennyrouter-skillsbench-20261019/)
 
 | File | Contents |
 | --- | --- |
@@ -29,7 +32,7 @@ paths, emails and token-shaped strings:
 
 ```sh
 .venv/bin/python benchmarks/skillsbench/export_results.py runs/proxy-full/<run-id> \
-  --out benchmarks/skillsbench/results/proxy-full-60
+  --out benchmarks/skillsbench/results/pennyrouter-skillsbench-20261019
 ```
 
 Reviewers who need the raw evidence can request it; it is not a public artifact.

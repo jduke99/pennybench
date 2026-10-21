@@ -86,7 +86,7 @@ def _download(url: str, dest: Path) -> None:
     with urllib.request.urlopen(url, timeout=300) as response, tmp.open("wb") as out:
         while chunk := response.read(1 << 20):
             out.write(chunk)
-    tmp.rename(dest)
+    tmp.replace(dest)
 
 
 def ensure_claude_code(version: str, cache_root: Path, arch: str | None = None) -> ClaudeCodeBuild:
@@ -118,6 +118,6 @@ def ensure_claude_code(version: str, cache_root: Path, arch: str | None = None) 
         checksums[platform] = actual
 
     build = ClaudeCodeBuild(version=version, arch=arch, directory=directory, checksums=checksums)
-    build.launcher.write_text(LAUNCHER)
+    build.launcher.write_text(LAUNCHER, newline="\n")
     build.launcher.chmod(0o755)
     return build

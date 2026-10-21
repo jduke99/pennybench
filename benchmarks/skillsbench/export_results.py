@@ -16,7 +16,7 @@ TRIAL_FIELDS = (
     "harbor_exit_code", "harbor_hung",
 )
 MANIFEST_DROP = {"host_home"}
-PRIVATE = re.compile(r"/Users/[^/\s\"']+|(?<![/\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+(?<!\d)(?!\w)|sk-ant-\S+|Bearer \S+")
+PRIVATE = re.compile(r"/Users/[^/\s\"']+|/home/[^/\s\"']+|[A-Za-z]:[\\/]+Users[\\/]+[^\\/\s\"']+|(?<![/\w.+-])[\w.+-]+@[\w-]+(?:\.[\w-]+)+(?<!\d)(?!\w)|sk-ant-\S+|Bearer \S+")
 
 
 def scrub(text: str) -> str:

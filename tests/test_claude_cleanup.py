@@ -1,5 +1,6 @@
 import asyncio
 import json
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -73,6 +74,7 @@ def test_natural_exit_does_not_trigger_cleanup(tmp_path, monkeypatch):
     assert not json.loads((tmp_path / 'claude-cleanup.json').read_text())['cleanup_exceeded_grace']
 
 
+@pytest.mark.skipif(sys.platform == 'win32', reason='needs /bin/bash')
 def test_real_inherited_pipe_is_released(tmp_path, monkeypatch):
     """A CLI can exit while a child keeps Docker's captured output open."""
     import shlex

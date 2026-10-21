@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 from pennybench.digest import tree_sha256
+from pennybench.hostenv import HOST_PASSTHROUGH
 
 
 class DatasetError(RuntimeError):
@@ -29,7 +30,7 @@ def ensure_dataset(ref: str, sha256: str, store: Path) -> Path:
         staging = target.with_name(target.name + ".part")
         shutil.rmtree(staging, ignore_errors=True)
         staging.mkdir(parents=True)
-        env = {k: os.environ[k] for k in ("PATH", "HOME", "TMPDIR") if k in os.environ}
+        env = {k: os.environ[k] for k in HOST_PASSTHROUGH if k in os.environ}
         out = subprocess.run([harbor_bin(), "download", ref, "-o", str(staging)], env=env,
                              capture_output=True, text=True)
         children = [p for p in staging.iterdir() if p.is_dir()]

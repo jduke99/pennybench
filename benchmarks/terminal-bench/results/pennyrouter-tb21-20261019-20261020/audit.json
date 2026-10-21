@@ -1,0 +1,150 @@
+{
+  "passed": true,
+  "scope": "Both source runs passed full evidence audits; no new pooled evidence audit is claimed.",
+  "sources": {
+    "pennyrouter-tb21-20261019": {
+      "passed": true,
+      "partial": false,
+      "checks": [
+        {
+          "name": "complete",
+          "passed": true,
+          "detail": "136 of 136 planned trials finished",
+          "failures": []
+        },
+        {
+          "name": "capture",
+          "passed": true,
+          "detail": "every completed trial has decodable model calls on the wire; 0026-merge-diff-arc-agi-task-r0-baseline: 2 call(s) aborted by the client",
+          "failures": []
+        },
+        {
+          "name": "route",
+          "passed": true,
+          "detail": "every model call went to the host its arm declares",
+          "failures": []
+        },
+        {
+          "name": "pins",
+          "passed": true,
+          "detail": "harness version and model match the arm specs",
+          "failures": []
+        },
+        {
+          "name": "adoption",
+          "passed": true,
+          "detail": "no adoption marker declared; adoption not checked",
+          "failures": []
+        },
+        {
+          "name": "task_skills",
+          "passed": true,
+          "detail": "task skills without: every installed task skill appears in the trial's requests",
+          "failures": []
+        },
+        {
+          "name": "cache_isolation",
+          "passed": true,
+          "detail": "cache isolation trial: every trial's own reference line appears in its requests",
+          "failures": []
+        },
+        {
+          "name": "login_plan",
+          "passed": true,
+          "detail": "both arms of every pair ran on one account plan (plans in this run: pro/default_claude_ai)",
+          "failures": []
+        },
+        {
+          "name": "environment",
+          "passed": true,
+          "detail": "every completed trial recorded its packages; both arms of a pair match",
+          "failures": []
+        },
+        {
+          "name": "isolation",
+          "passed": true,
+          "detail": "no host home-directory path appears in any request",
+          "failures": []
+        },
+        {
+          "name": "pairing",
+          "passed": true,
+          "detail": "every finished pair has both arms (a single-arm run has one trial per task run); excluded tasks never ran",
+          "failures": []
+        }
+      ]
+    },
+    "pennyrouter-tb21-20261020": {
+      "passed": true,
+      "partial": false,
+      "checks": [
+        {
+          "name": "complete",
+          "passed": true,
+          "detail": "136 of 136 planned trials finished",
+          "failures": []
+        },
+        {
+          "name": "capture",
+          "passed": true,
+          "detail": "every completed trial has decodable model calls on the wire; 0032-multi-source-data-merger-r0-baseline: 1 call(s) aborted by the client; 0061-extract-moves-from-video-r0-treatment: 1 call(s) aborted by the client",
+          "failures": []
+        },
+        {
+          "name": "route",
+          "passed": true,
+          "detail": "every model call went to the host its arm declares",
+          "failures": []
+        },
+        {
+          "name": "pins",
+          "passed": true,
+          "detail": "harness version and model match the arm specs",
+          "failures": []
+        },
+        {
+          "name": "adoption",
+          "passed": true,
+          "detail": "no adoption marker declared; adoption not checked",
+          "failures": []
+        },
+        {
+          "name": "task_skills",
+          "passed": true,
+          "detail": "task skills without: every installed task skill appears in the trial's requests",
+          "failures": []
+        },
+        {
+          "name": "cache_isolation",
+          "passed": true,
+          "detail": "cache isolation trial: every trial's own reference line appears in its requests",
+          "failures": []
+        },
+        {
+          "name": "login_plan",
+          "passed": true,
+          "detail": "both arms of every pair ran on one account plan (plans in this run: pro/default_claude_ai)",
+          "failures": []
+        },
+        {
+          "name": "environment",
+          "passed": true,
+          "detail": "every completed trial recorded its packages; both arms of a pair match",
+          "failures": []
+        },
+        {
+          "name": "isolation",
+          "passed": true,
+          "detail": "no host home-directory path appears in any request",
+          "failures": []
+        },
+        {
+          "name": "pairing",
+          "passed": true,
+          "detail": "every finished pair has both arms (a single-arm run has one trial per task run); excluded tasks never ran",
+          "failures": []
+        }
+      ]
+    }
+  }
+}

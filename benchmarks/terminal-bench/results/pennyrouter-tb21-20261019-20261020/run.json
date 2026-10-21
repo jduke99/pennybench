@@ -1,0 +1,94 @@
+{
+  "experiment": "pennyrouter-tb21-20261019-20261020",
+  "stage": "full",
+  "k": 2,
+  "seed": 20261020,
+  "preregistered": false,
+  "analysis_type": "post_hoc_pool_of_two_independent_k1_runs",
+  "endpoints": {
+    "primary": [
+      "cost"
+    ],
+    "secondary": [
+      "reward",
+      "total_tokens",
+      "output_tokens",
+      "fresh_input_tokens",
+      "cache_read_tokens",
+      "cache_write_tokens",
+      "turns",
+      "wall_clock"
+    ]
+  },
+  "quality": {
+    "test": "sign",
+    "non_inferiority_margin": null
+  },
+  "sources": [
+    {
+      "publication_name": "pennyrouter-tb21-20261019",
+      "experiment": "proxy-tb21-bounded",
+      "created_at": "2026-10-19T20:19:56.697538+00:00",
+      "preregistered": true,
+      "manifest_sha256": "362002ca19ced19a262124974814454dd6d52d1943151899d53079545cb2297d",
+      "metrics_sha256": "007062a544b543ca2572e23e4c56117a0ae36f823ad3b2a0424402d6fd8d7650",
+      "audit_passed": true,
+      "trials": 136
+    },
+    {
+      "publication_name": "pennyrouter-tb21-20261020",
+      "experiment": "proxy-tb21-repeat-20261020",
+      "created_at": "2026-10-20T16:07:01.761276+00:00",
+      "preregistered": false,
+      "manifest_sha256": "17eeff4117e611ed23cf7dc3916b8ded701bf1aa2e7880da8f88e259a577571e",
+      "metrics_sha256": "0d6c8037523b4130146e80d0f8022c1b5bca7e576cb8a8a77970c7add41b0436",
+      "audit_passed": true,
+      "trials": 136
+    }
+  ],
+  "arms": {
+    "baseline": {
+      "id": "cc-sonnet-native-login",
+      "harness": "claude-code",
+      "harness_version": "2.1.302",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "auth": "claude-login",
+      "route": "native",
+      "inject": {
+        "settings_file": "0b9c8be84028a50a3a779bb301a64a1a3cc6d97fa843dcba77d5c4a8e4f6aa23"
+      },
+      "adoption_marker": null,
+      "auth_kind": "claude_login"
+    },
+    "treatment": {
+      "id": "cc-sonnet-proxy-login",
+      "harness": "claude-code",
+      "harness_version": "2.1.302",
+      "model": "claude-sonnet-5-5",
+      "effort": "medium",
+      "auth": "claude-login",
+      "route": "endpoint:proxy",
+      "inject": {
+        "settings_file": "0b9c8be84028a50a3a779bb301a64a1a3cc6d97fa843dcba77d5c4a8e4f6aa23"
+      },
+      "adoption_marker": null,
+      "endpoint": {
+        "name": "proxy",
+        "base_url": "<local-proxy-endpoint>",
+        "env": {
+          "ENABLE_TOOL_SEARCH": "true"
+        }
+      },
+      "auth_kind": "claude_login"
+    }
+  },
+  "tasks": {
+    "path": "runs/terminal-bench-prep/source/tasks",
+    "sha256": "03f70ce2669b7b0cd0ffd3242113fc5c2b8c385be0028a5f39c1ba2b540ab2c0"
+  },
+  "task_skills": "without",
+  "cache_isolation": "trial",
+  "reproduction_route": "Hosted default https://api.pennyrouter.com with your own linked account.",
+  "measured_route": "Configured local PennyRouter endpoint; address redacted."
+}

@@ -1,0 +1,14 @@
+# Files that run inside Linux containers or POSIX shells must keep LF endings, or a Windows
+# checkout (core.autocrlf=true) turns `#!/bin/sh\r` into "no such file or directory".
+* text=auto
+*.sh text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.toml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+Dockerfile text eol=lf
+*.txt text eol=lf
+*.pdf binary
+*.png binary

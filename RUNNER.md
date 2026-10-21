@@ -38,7 +38,7 @@ else is printed as **NOT A CLAIM** with the reasons.
 
 ## One-time setup
 
-Requirements: macOS or Linux, Docker running, [uv](https://docs.astral.sh/uv/), Python 3.12.
+Requirements: macOS or Linux (Windows: use WSL2, see [docs/WINDOWS.md](docs/WINDOWS.md)), Docker running, [uv](https://docs.astral.sh/uv/), Python 3.12.
 
 1. **Install.**
 
@@ -65,7 +65,7 @@ Requirements: macOS or Linux, Docker running, [uv](https://docs.astral.sh/uv/), 
    `min_valid_minutes` left (run `claude auth status` to refresh it).
 
    How the login is used: only the `claudeAiOauth` entry is read (from the macOS Keychain or
-   `~/.claude/.credentials.json`; other stored sign-ins are never touched). Each trial gets a
+   `~/.claude/.credentials.json` (Linux, WSL, Windows); other stored sign-ins are never touched). Each trial gets a
    private copy, mounted read-only and installed into Claude Code's config directory by
    PennyBench's Harbor agent. After the trial every copy is deleted, including the one Harbor
    brings back with the logs, before the secret scan; if Claude Code refreshed the login during

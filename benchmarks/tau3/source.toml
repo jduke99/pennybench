@@ -1,0 +1,9 @@
+suite = "tau3-bench (Harbor Hub)"
+dataset = "sierra-research/tau3-bench@latest"
+task_tree_sha256 = "fd436037921675061e805cff050fab69709a3be8bc506ad4badfa43f4d07f213"
+task_count = 375
+# Tasks per domain in the pinned tree, from the task directory names.
+domains = { airline = 50, retail = 114, telecom = 114, banking_knowledge = 97 }
+# The last tau2-bench commit before v2.0.0 (2026-10-19), whose grader API the adapter expects.
+tau2_bench_commit = "96a3ef92329baf908ffe9dfe188cea34e8701d2a"
+pinned_tree_sha256 = "19be236b00d3b469540b84378b7ffc8c3b0aa19ee9d5036a7133df891fa73df9"

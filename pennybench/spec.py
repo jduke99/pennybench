@@ -12,6 +12,7 @@ import yaml
 from pennybench.datasets import ensure_dataset
 from pennybench.digest import content_sha256
 from pennybench.metrics import METRICS
+from pennybench.task_env import TaskEnv, parse_task_env
 
 HARNESSES = ("claude-code",)
 EFFORTS = ("low", "medium", "high", "xhigh", "max")
@@ -89,6 +90,7 @@ class Experiment:
     cleanup_prebuilt_images: bool
     endpoints: dict[str, list[str]]
     quality: dict[str, Any]
+    task_env: TaskEnv
     source: Path
     root: Path
 
@@ -303,6 +305,7 @@ def load_experiment(path: Path, root: Path, extra_arm_dirs: list[Path] = (),
         cleanup_prebuilt_images=cleanup_prebuilt_images,
         endpoints=endpoints,
         quality=raw.get("quality") or {},
+        task_env=parse_task_env(raw.get("task_env"), path),
         source=path,
         root=root,
     )

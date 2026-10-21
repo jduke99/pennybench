@@ -16,6 +16,7 @@ from pennybench.config import LocalConfig
 from pennybench.environment import (record_environment, remove_stray_containers,
                                     remove_stray_images)
 from pennybench.harbor import harbor_bin, run_harbor, task_timeout_s
+from pennybench.hostenv import HOST_PASSTHROUGH
 from pennybench.spec import Experiment
 
 # SkillsBench reference solutions look for their task's skills at /skills, at ~/.claude/skills
@@ -34,7 +35,7 @@ def image_workdir(task_dir: Path) -> str:
             workdir = parts[1].strip().strip("\"'")
     return workdir
 
-HOST_VARS = ("PATH", "HOME", "USER", "TMPDIR", "LANG")
+HOST_VARS = HOST_PASSTHROUGH
 
 
 def oracle_dir(experiment: Experiment, config: LocalConfig) -> Path:

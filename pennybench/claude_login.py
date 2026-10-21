@@ -15,6 +15,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.error
@@ -33,7 +34,7 @@ class LoginError(RuntimeError):
 
 
 def _read_store() -> dict:
-    if os.uname().sysname == "Darwin":
+    if sys.platform == "darwin":
         out = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE, "-w"],
                              capture_output=True, text=True)
         if out.returncode != 0:
@@ -46,7 +47,7 @@ def _read_store() -> dict:
 
 def _write_store(store: dict) -> None:
     text = json.dumps(store, separators=(",", ":"))
-    if os.uname().sysname == "Darwin":
+    if sys.platform == "darwin":
         account = subprocess.run(["security", "find-generic-password", "-s", KEYCHAIN_SERVICE],
                                  capture_output=True, text=True).stdout
         acct = next((line.split("=", 1)[1].strip().strip('"') for line in account.splitlines()

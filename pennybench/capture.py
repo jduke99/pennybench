@@ -8,7 +8,6 @@ hosts and tunnels everything else (package installs, downloads) untouched.
 from __future__ import annotations
 
 import re
-import signal
 import socket
 import subprocess
 import sys
@@ -64,7 +63,7 @@ class WireCapture:
         self.confdir.mkdir(parents=True, exist_ok=True)
         allow = "|".join(re.escape(h) for h in self.hosts)
         command = [
-            str(Path(sys.executable).with_name("mitmdump")),
+            str(Path(sys.executable).with_name("mitmdump.exe" if sys.platform == "win32" else "mitmdump")),
             "--listen-host", "127.0.0.1",
             "--listen-port", str(self.port),
             "--set", f"confdir={self.confdir}",
@@ -73,7 +72,7 @@ class WireCapture:
             "-s", str(ADDON),
             "--set", f"pb_capture_file={self.capture_file}",
             "--set", f"pb_capture_hosts={','.join(self.hosts)}",
-            # The Mac host cannot resolve Docker's alias for itself; the proxy runs on the host.
+            # A desktop host cannot resolve Docker's alias for itself; the proxy runs on the host.
             "--set", f"pb_host_rewrites={DOCKER_HOST_ALIAS}=127.0.0.1",
         ]
         self.process = subprocess.Popen(command, stdout=self.log.open("wb"),
@@ -97,19 +96,23 @@ class WireCapture:
     def stop(self) -> None:
         if self.process is None or self.process.poll() is not None:
             return
-        self.process.send_signal(signal.SIGTERM)
+        self.process.terminate()
         try:
             self.process.wait(timeout=10)
         except subprocess.TimeoutExpired:
             self.process.kill()
 
-    def agent_env(self) -> dict[str, str]:
+    def agent_env(self, direct_hosts: tuple[str, ...] = ()) -> dict[str, str]:
+        """`direct_hosts` bypass the proxy: the task's own services, which it cannot resolve."""
         proxy = f"http://{DOCKER_HOST_ALIAS}:{self.port}"
-        return {
+        env = {
             "HTTPS_PROXY": proxy,
             "HTTP_PROXY": proxy,
             "NODE_EXTRA_CA_CERTS": CONTAINER_CA_PATH,
         }
+        if direct_hosts:
+            env["NO_PROXY"] = env["no_proxy"] = ",".join(direct_hosts)
+        return env
 
     def mounts(self) -> list[dict]:
         return [{"type": "bind", "source": str(self.ca_cert), "target": CONTAINER_CA_PATH,

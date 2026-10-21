@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import sys
 import tomllib
+from urllib.parse import urlparse
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,7 +18,7 @@ from pennybench.spec import Arm
 
 
 def harbor_bin() -> str:
-    beside = Path(sys.executable).with_name("harbor")
+    beside = Path(sys.executable).with_name("harbor.exe" if sys.platform == "win32" else "harbor")
     if beside.exists():
         return str(beside)
     found = shutil.which("harbor")
@@ -51,6 +52,8 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
         "-m", arm.model,
         "-o", str(out_dir),
         "-n", "1",
+        # Tasks that read host variables (a user simulator's key) ask before launching.
+        "--yes",
         # Keep the built image so the runner can record its packages; the runner removes it.
         "--no-delete",
         "--ak", f"version={arm.harness_version}",
@@ -81,6 +84,14 @@ def harbor_command(arm: Arm, task_dir: Path, out_dir: Path, trial_env: TrialEnv,
 # Harbor's timeouts depend on `docker compose` calls returning; when one wedges,
 # they may never fire. Keep a one-hour minimum for the process backstop.
 TRIAL_TIMEOUT_S = 3600
+
+
+def sidecar_hosts(task_dir: Path) -> list[str]:
+    """Hosts of the MCP servers a task declares. They are the task's own services, reachable
+    only inside its network, so the agent must not send them through the capture proxy."""
+    task = tomllib.loads((task_dir / "task.toml").read_text())
+    servers = task.get("environment", {}).get("mcp_servers", [])
+    return sorted({h for s in servers if (h := urlparse(s.get("url", "")).hostname)})
 
 
 def task_timeout_s(task_dir: Path) -> float:
@@ -114,24 +125,33 @@ class HarborOutcome:
         return "agent_error" if self.result.get("exception_info") else "complete"
 
 
+def _stop_tree(proc: subprocess.Popen, force: bool) -> None:
+    """Stop Harbor and the docker compose calls it spawned."""
+    if sys.platform == "win32":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(proc.pid)], capture_output=True)
+    else:
+        os.killpg(proc.pid, signal.SIGKILL if force else signal.SIGTERM)
+
+
 def run_harbor(argv: list[str], host_env: dict[str, str], out_dir: Path,
                log_path: Path, timeout_s: float = TRIAL_TIMEOUT_S) -> HarborOutcome:
     out_dir.mkdir(parents=True, exist_ok=True)
     hung = False
     with log_path.open("w") as log:
-        # Its own session, so a timeout can kill Harbor together with the docker compose calls
-        # it spawned.
-        proc = subprocess.Popen(argv, env=host_env, stdout=log, stderr=subprocess.STDOUT,
-                                start_new_session=True)
+        # Its own session (process group on Windows), so a timeout can kill Harbor together
+        # with the docker compose calls it spawned.
+        group = ({"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP} if sys.platform == "win32"
+                 else {"start_new_session": True})
+        proc = subprocess.Popen(argv, env=host_env, stdout=log, stderr=subprocess.STDOUT, **group)
         try:
             proc.wait(timeout=timeout_s)
         except subprocess.TimeoutExpired:
             hung = True
-            os.killpg(proc.pid, signal.SIGTERM)
+            _stop_tree(proc, force=False)
             try:
                 proc.wait(timeout=20)
             except subprocess.TimeoutExpired:
-                os.killpg(proc.pid, signal.SIGKILL)
+                _stop_tree(proc, force=True)
                 proc.wait()
     if hung:
         return HarborOutcome(proc.returncode, None, None, hung=True)

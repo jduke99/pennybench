@@ -14,4 +14,11 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 *.egg-info/
-/benchmarks/terminal-bench/
+/benchmarks/terminal-bench/*
+!/benchmarks/terminal-bench/build_report_page.py
+!/benchmarks/terminal-bench/report_template.py
+!/benchmarks/terminal-bench/export_results.py
+!/benchmarks/terminal-bench/results/
+/benchmarks/terminal-bench/results/*
+!/benchmarks/terminal-bench/results/README.md
+!/benchmarks/terminal-bench/results/pennyrouter-tb21-20261019-20261020/

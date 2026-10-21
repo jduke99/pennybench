@@ -6,8 +6,8 @@ summed cost was 30.1% lower. Official rewards were higher on 6 tasks, lower on 4
 and equal on 47. The methodology documents the 2 environment omissions and 1
 incomplete pair; they remain visible in the task register.
 
-- [HTML report](https://jduke99.github.io/pennybench/skillsbench-60/)
-- [PDF report](../../output/pdf/pennybench-skillsbench-60.pdf)
+- [HTML report](https://jduke99.github.io/pennybench/pennyrouter-skillsbench-20261019/)
+- [PDF report](../../output/pdf/pennyrouter-skillsbench-20261019.pdf)
 - [Markdown report](../../REPORT.md)
 - [Results and publication status](results/README.md)
 

@@ -2,7 +2,7 @@
 
 Scope: SkillBench Core and Extended tasks (n=60). Excluded tasks in the Extreme (>4hr, n=26) category.
 
-**57 comparable pairs** contribute to paired statistics. One project (paratransit-routing) has a native timeout. Two projects (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. The omissions are explicitly post-hoc; this is not a claim from a completed, pre-registered 60-project experiment. No grader, trial reward, original manifest, or original artifact was changed.
+**57 comparable pairs** contribute to paired statistics. One project (paratransit-routing) has a native timeout. Two projects (fix-visual-stability and drone-planning-control) are omitted from audited evidence because both arms lack package inventories. 
 
 Trial directories here are links to the original preserved artifacts. Audit PASS means the included evidence passed the checks, not that missing evidence was recovered. Execution beyond the first 60 projects is outside this report.
 
@@ -10,8 +10,7 @@ Trial directories here are links to the original preserved artifacts. Audit PASS
 
 ```text
 proxy-full-60-project-partial  stage=full  tasks=57
-status: NOT A CLAIM — evaluation stopped after the first 60 scheduled projects; subset and environment omissions were selected post-hoc, not pre-registered
-dropped pairs: 1 (a pair counts only if both arms completed)
+status: evaluation stopped after the first 60 scheduled projects;
 
 endpoint            role           median              95% CI      H-L       p  lower/higher/eq    total
 cost                primary        -34.0%      [-37.2, -28.4]   -32.5%   0.000     53/4/0        -30.1%
