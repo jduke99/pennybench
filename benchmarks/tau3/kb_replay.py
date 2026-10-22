@@ -9,6 +9,9 @@ result from the captured transcripts through:
   select     Haiku picks document IDs given the search query and the user's latest message;
              the kept documents are copied verbatim from the result, the rest listed by ID
   select+g   select, plus every document naming a tool is kept regardless of Haiku's choice
+  sections   as select, but Haiku picks `##` sections and is told to keep only what the query
+             needs; kept sections are verbatim under their document's header
+  sections+g sections, plus every section naming a tool
   top2       the first two BM25 results verbatim, no model
   head_tail  the gateway's deterministic 3000+2000-char truncation, no model
 
@@ -59,10 +62,20 @@ SELECT_PROMPT = (
     "document that names a tool to use. When unsure, keep the document; drop only documents "
     "clearly about something else. Copy IDs exactly as written."
 )
+SECTION_PROMPT = (
+    "You choose which parts of knowledge-base search results a customer-service agent needs to "
+    "read. You get the agent's search query, the customer's latest message, and the results "
+    "split into labeled sections [S1], [S2], and so on. Return the labels of the sections the "
+    "agent needs to answer this customer or take the action they want: the facts that decide "
+    "the answer (fees, limits, eligibility), the procedure for that action, and any section "
+    "naming a tool for it. Leave out sections about other products, other situations, or "
+    "general background. Copy labels exactly as written."
+)
 SELECT_SCHEMA = json.dumps({"type": "object", "required": ["keep"], "properties": {
     "keep": {"type": "array", "items": {"type": "string"}}}})
 
 DOC = re.compile(r"(?m)^(\d+)\. (.+)\n   ID: (\S+)\n   Score: [\d.]+\n   Content: ")
+SECTION = re.compile(r"(?m)^(?=#{2,3} )")
 TOOLISH = re.compile(r"\b[a-z]+(?:_[a-z0-9]+)+_\d{4}\b|`[a-z]+(?:_[a-z0-9]+)+\(|Tool: [a-z]")
 
 
@@ -124,6 +137,39 @@ def split_docs(result: str) -> list[dict]:
             for i, m in enumerate(heads)]
 
 
+def split_sections(docs: list[dict]) -> list[dict]:
+    """Each document's content split at `##`/`###` headings, labeled S1..Sn across the result."""
+    sections = []
+    for doc in docs:
+        cut = doc["text"].index("Content: ") + len("Content: ")
+        doc["head"] = doc["text"][:cut]
+        for part in (p for p in SECTION.split(doc["text"][cut:]) if p.strip()):
+            sections.append({"label": f"S{len(sections) + 1}", "doc": doc["id"], "text": part})
+    return sections
+
+
+def section_view(docs: list[dict], sections: list[dict]) -> str:
+    by_doc = defaultdict(list)
+    for s in sections:
+        by_doc[s["doc"]].append(f"[{s['label']}]\n{s['text']}")
+    return "\n".join(f"Document {i + 1}: {d['title']} ({d['id']})\n" + "\n".join(by_doc[d["id"]])
+                     for i, d in enumerate(docs))
+
+
+def section_envelope(query: str, docs: list[dict], sections: list[dict], keep: set[str], n_chars: int) -> str:
+    shown, omitted = [], []
+    for doc in docs:
+        parts = [s for s in sections if s["doc"] == doc["id"]]
+        kept = [s["text"] for s in parts if s["label"] in keep]
+        if kept:
+            shown.append(doc["head"] + "".join(kept))
+        if len(kept) < len(parts):
+            omitted.append(f"{doc['id']} ({doc['title']}, {len(parts) - len(kept)} of {len(parts)} sections)")
+    return (f"[large-result] KB_search returned {len(docs)} documents ({n_chars} chars); showing the parts "
+            f"relevant to: \"{query}\". Shown text is verbatim.\n\n"
+            + "\n".join(shown) + (f"{OMITTED}{'; '.join(omitted)}" if omitted else ""))
+
+
 def haiku(system: str, prompt: str, *, schema: str | None = None, max_out: int) -> dict:
     key = hashlib.sha256(json.dumps([MODEL, system, prompt, schema, max_out]).encode()).hexdigest()
     cache = OUT / "calls" / f"{key}.json"
@@ -168,9 +214,16 @@ def reduce_all(event: dict) -> dict[str, str]:
                    f"Search results:\n{result}", schema=SELECT_SCHEMA, max_out=2048)["structured"] or {}
     keep = set(picked.get("keep", [])) & {d["id"] for d in docs}
     guarded = keep | {d["id"] for d in docs if TOOLISH.search(d["text"])}
+    sections = split_sections(docs)
+    picked = haiku(SECTION_PROMPT, f"Search query: {event['query']}\n\nCustomer's latest message:\n{event['user']}\n\n"
+                   f"Search results:\n{section_view(docs, sections)}", schema=SELECT_SCHEMA, max_out=2048)["structured"] or {}
+    chosen = set(picked.get("keep", [])) & {s["label"] for s in sections}
+    chosen_g = chosen | {s["label"] for s in sections if TOOLISH.search(s["text"])}
     return {"digest": digest,
             "select": envelope(event["query"], docs, keep, len(result)),
             "select+g": envelope(event["query"], docs, guarded, len(result)),
+            "sections": section_envelope(event["query"], docs, sections, chosen, len(result)),
+            "sections+g": section_envelope(event["query"], docs, sections, chosen_g, len(result)),
             "top2": envelope(event["query"], docs, {d["id"] for d in docs[:2]}, len(result)),
             "head_tail": f"{result[:3000]}\n[... {len(result) - 5000} of {len(result)} chars omitted ...]\n{result[-2000:]}",
             "full": result}
